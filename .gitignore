@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+datasets/
+webots/logs/*
+!webots/logs/.gitkeep
+webots/worlds/.*.wbproj
