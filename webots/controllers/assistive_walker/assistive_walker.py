@@ -1,5 +1,6 @@
 """Walking animation and synchronized stereo ROS 2 bridge (no detector)."""
 from pathlib import Path
+from array import array
 import json
 import math
 import numpy as np
@@ -11,6 +12,7 @@ from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Bool, Float32, String
 from tf2_ros import TransformBroadcaster
 from upstream_pedestrian import Pedestrian
+from walking_motion import walking_pose,STRIDE_M
 
 ROOT = Path(__file__).resolve().parents[2]
 BASELINE = 0.12
@@ -43,13 +45,21 @@ class AssistiveWalker(Pedestrian):
         super().__init__()
         self.dt=int(self.getBasicTimeStep()); self.root=self.getSelf()
         self.position=self.root.getField('translation')
+        self.viewpoint=self.getFromDef('OVERVIEW')
+        self.view_position=np.array([-4.,-6.,4.])
+        self.follow_view=True
         self.joints={name:self.root.getField(name) for name in self.joint_names}
         self.cane=self.getFromDef('CANE_SWEEP').getField('rotation')
-        self.x=0.; self.distance=0.; self.speed=0.65; self.paused=False
+        self.x=0.; self.y=0.; self.heading=0.; self.distance=0.; self.speed=.72; self.actual_speed=0.; self.paused=False
+        self.scene=json.loads((ROOT/"config/urban_scene.json").read_text())
+        self.path=np.array(self.scene["path_xy"],float)
+        self.crossing_progress=None
         self.hold=0.; self.stations=set(); self.lap=0; self.frame=0
-        self.active_stage=-1
-        self.targets=[self.getFromDef(name).getField('translation') for name in ['BENCH','CONE','TARGET_PERSON']]
+        self.target_person=self.getFromDef('TARGET_PERSON')
+        self.target_person_joints={name:self.target_person.getField(name) for name in self.joint_names}
+        self.root_rotation=self.root.getField('rotation')
         self.last_publish=-1.; self.last_status=-1.; self.last_save=-1.
+        self.scenario=self.scene["scenarios"][0]
         self.keyboard=self.getKeyboard(); self.keyboard.enable(self.dt); self.previous_key=-1
         rclpy.init(args=[]); self.node=rclpy.create_node('assistive_walker')
         self.clock=self.node.create_publisher(Clock,'/clock',10)
@@ -72,47 +82,71 @@ class AssistiveWalker(Pedestrian):
         pitch=.12; cp=math.cos(pitch); sp=math.sin(pitch)
         self.camera_rotation=np.array([[cp,0,sp],[0,1,0],[-sp,0,cp]]) @ np.array([[0,0,1],[-1,0,0],[0,-1,0]])
         self.node.get_logger().info('Stereo ready: /assistive/stereo/{left,right}/image_raw | 640x480 | 15.625 Hz | baseline 0.12 m')
-        self.node.get_logger().info('P: pause/resume walking | R: restart route | speed/pause also available as ROS topics. Ground truth is SIMULATOR data, not YOLO.')
+        self.node.get_logger().info('Urban route: fixed obstacles and a crossing pedestrian. Gait uses stance-foot IK. Perception runs in a separate stereo image node.')
 
     def reset_route(self):
-        self.x=0.; self.distance=0.; self.stations.clear(); self.hold=0.; self.lap+=1
+        self.x=0.;self.y=0.;self.heading=0.;self.distance=0.;self.actual_speed=0.
+        self.stations.clear();self.hold=0.;self.lap+=1;self.crossing_progress=None
+
+    def path_y(self,x):
+        i=max(0,min(len(self.path)-2,int(np.searchsorted(self.path[:,0],x)-1)))
+        x0,y0=self.path[i];x1,y1=self.path[i+1];t=max(0.,min(1.,(x-x0)/(x1-x0)))
+        i0=max(0,i-1);i1=min(len(self.path)-1,i+2)
+        m0=(y1-self.path[i0,1])/(x1-self.path[i0,0])
+        m1=(self.path[i1,1]-y0)/(self.path[i1,0]-x0)
+        return float((2*t**3-3*t*t+1)*y0+(t**3-2*t*t+t)*m0*(x1-x0)+(-2*t**3+3*t*t)*y1+(t**3-t*t)*m1*(x1-x0))
 
     def update_walking(self):
+        dt=self.dt/1000
         key=self.keyboard.getKey()
-        if key != self.previous_key:
-            if key in [ord('P'),ord(' ')]: self.paused=not self.paused
-            if key==ord('R'): self.reset_route()
+        if key!=self.previous_key:
+            if key in [ord('P'),ord(' ')]:self.paused=not self.paused
+            if key==ord('R'):self.reset_route()
+            if key==ord('V'):self.follow_view=not self.follow_view
         self.previous_key=key
-        moving=not self.paused and self.hold<=0
-        if not self.paused:
-            if self.hold>0: self.hold=max(0.,self.hold-self.dt/1000)
-            else:
-                dx=self.speed*self.dt/1000; self.x+=dx; self.distance+=dx
-                for station in [3.,11.,19.]:
-                    if self.x>=station and station not in self.stations:
-                        self.stations.add(station); self.hold=2.5
-                if self.x>25.5: self.reset_route()
-        phase=self.distance/self.CYCLE_TO_DISTANCE_RATIO
-        sequence=int(phase)%8; ratio=phase-int(phase)
-        for i,name in enumerate(self.joint_names):
-            value=self.angles[i][sequence]*(1-ratio)+self.angles[i][(sequence+1)%8]*ratio
-            if name=='headAngle': value=0.
-            if name=='rightArmAngle': value=-.12
-            if name=='rightLowerArmAngle': value=-.25
+        if self.x>=29.5 and 29.5 not in self.stations:
+            self.stations.add(29.5);self.hold=3.4
+        if not self.paused:self.hold=max(0.,self.hold-dt)
+        cruise=self.speed
+        for lo,hi,limit in [(8,13.5,.55),(16,20,.60),(23,27,.50),(28,34.5,.45)]:
+            if lo<=self.x<hi:cruise=min(cruise,limit)
+        target=0. if self.paused or self.hold>0 else cruise
+        acceleration=.65 if target>self.actual_speed else 1.05
+        self.actual_speed+=max(-acceleration*dt,min(acceleration*dt,target-self.actual_speed))
+        slope=(self.path_y(self.x+.15)-self.path_y(self.x-.15))/.30
+        ds=self.actual_speed*dt
+        self.x+=ds/math.sqrt(1+slope*slope);self.distance+=ds
+        if self.x>self.scene['route_end_m']:self.reset_route()
+        cycle=self.distance/STRIDE_M;blend=min(1.,self.actual_speed/.18)
+        self.y=self.path_y(self.x)+.009*math.sin(2*math.pi*cycle)*blend
+        wanted=math.atan2(self.path_y(self.x+.25)-self.path_y(self.x-.25),.50)
+        error=math.atan2(math.sin(wanted-self.heading),math.cos(wanted-self.heading))
+        self.heading+=error*min(1.,dt*4)
+        height=1.215+.006*math.cos(4*math.pi*cycle)*blend
+        for name,value in walking_pose(self.distance,height,self.actual_speed).items():
             self.joints[name].setSFFloat(value)
-        # Restrained vertical motion keeps the stereo rig parallel while walking.
-        bob=.012*math.sin(phase*math.pi/2) if moving else 0.
-        self.position.setSFVec3f([self.x,0.,1.27+bob])
-        self.cane.setSFRotation([0.,0.,1.,.22*math.sin(phase*math.pi/4)])
-        stage=min(2,int(self.x//8))
-        if stage!=self.active_stage:
-            for i,field in enumerate(self.targets):
-                poses=[[6.,1.02,0.],[14.,-.78,0.],[22.,.85,1.27]]
-                pose=poses[i]
-                if i!=stage: pose[1]=40.
-                field.setSFVec3f(pose)
-            self.active_stage=stage
-        return bob
+        self.position.setSFVec3f([self.x,self.y,height])
+        self.root_rotation.setSFRotation([0.,0.,1.,self.heading])
+        self.cane.setSFRotation([0.,0.,1.,.34*math.sin(2*math.pi*cycle+math.pi/3)*blend])
+        if self.follow_view:
+            desired=np.array([self.x-4.,self.y-6.,4.])
+            if np.linalg.norm(desired-self.view_position)>8:self.view_position=desired
+            self.view_position+=(desired-self.view_position)*min(1.,dt*2.5)
+            self.viewpoint.getField('position').setSFVec3f(self.view_position.tolist())
+        # The oncoming pedestrian traverses the sidewalk when the observer approaches.
+        if self.x>=28 and self.crossing_progress is None:self.crossing_progress=0.
+        if self.crossing_progress is not None and not self.paused:
+            self.crossing_progress=min(4.0,self.crossing_progress+dt*.85)
+        progress=self.crossing_progress or 0.
+        target_y=1.30-progress
+        ground=-.16*max(0.,min(1.,(-1.4-target_y)/.3))
+        self.target_person.getField('translation').setSFVec3f([32.,target_y,1.215+ground])
+        self.target_person.getField('rotation').setSFRotation([0.,0.,1.,-math.pi/2])
+        person_speed=.85 if self.crossing_progress is not None and progress<4 else 0.
+        for name,value in walking_pose(progress,1.215,person_speed).items():
+            self.target_person_joints[name].setSFFloat(value)
+        self.scenario=next(s for s in reversed(self.scene['scenarios']) if self.x>=s['start_m'])
+        return height-1.27
 
     def run(self):
         while rclpy.ok():
@@ -123,7 +157,9 @@ class AssistiveWalker(Pedestrian):
             stamp=Time(sec=ns//10**9,nanosec=ns%10**9)
             self.clock.publish(Clock(clock=stamp))
             # Pose is set before step; camera pixels, time and TF describe the same simulation tick.
-            transforms=[tf_message('world','assistive/base_link',[self.x,0,0],np.eye(3),stamp)]
+            c=math.cos(self.heading);s=math.sin(self.heading)
+            yaw_rotation=np.array([[c,-s,0.],[s,c,0.],[0.,0.,1.]])
+            transforms=[tf_message('world','assistive/base_link',[self.x,self.y,0],yaw_rotation,stamp)]
             for side,c,_,_,_ in self.cameras:
                 transforms.append(tf_message('assistive/base_link',f'assistive/{side}_camera_optical_frame',[.235,.06 if side=='left' else -.06,1.67+bob],self.camera_rotation,stamp))
             self.tf.sendTransform(transforms)
@@ -133,7 +169,7 @@ class AssistiveWalker(Pedestrian):
                 data=c.getImage()
                 if not data: continue
                 msg=Image(); msg.header.stamp=stamp; msg.header.frame_id=info.header.frame_id
-                msg.width=c.getWidth(); msg.height=c.getHeight(); msg.encoding='bgra8'; msg.step=msg.width*4; msg.data=bytes(data)
+                msg.width=c.getWidth(); msg.height=c.getHeight(); msg.encoding='bgra8'; msg.step=msg.width*4; msg.data=array("B",data)
                 pub.publish(msg); info.header.stamp=stamp; info_pub.publish(info)
             self.frame+=1
             objects=[]
@@ -143,7 +179,7 @@ class AssistiveWalker(Pedestrian):
                 objects.append({'id':obj.getId(),'class':label,'range_m':round(math.sqrt(sum(v*v for v in p)),3),'camera_position_m':p,'center_px':center,'size_px':size})
             self.ground_truth.publish(String(data=json.dumps({'source':'webots_recognition_ground_truth','simulation_time':seconds,'objects':objects})))
             if seconds-self.last_status>=.25:
-                state={'source':'simulation_only_no_yolo','simulation_time':round(seconds,3),'x_m':round(self.x,3),'speed_mps':self.speed,'paused':self.paused,'holding':self.hold>0,'lap':self.lap,'frames':self.frame,'visible_objects':len(objects),'baseline_m':BASELINE,'objects':objects}
+                state={'source':'simulation_only_no_yolo','simulation_time':round(seconds,3),'x_m':round(self.x,3),'y_m':round(self.y,3),'heading_rad':self.heading,'speed_mps':round(self.actual_speed,3),'requested_speed_mps':self.speed,'scenario_id':self.scenario['id'],'scenario_name_ko':self.scenario['name_ko'],'challenge_ko':self.scenario['challenge_ko'],'paused':self.paused,'holding':self.hold>0,'lap':self.lap,'frames':self.frame,'visible_objects':len(objects),'baseline_m':BASELINE,'objects':objects}
                 self.status.publish(String(data=json.dumps(state))); self.last_status=seconds
                 (ROOT/'logs/status.json').write_text(json.dumps(state,indent=2))
             if seconds-self.last_save>=2:

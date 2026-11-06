@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish and speak Korean reference guidance from Webots ground truth."""
+"""Publish and speak Korean reference guidance from stereo image measurements."""
 from pathlib import Path
 import json
 import subprocess
@@ -7,26 +7,26 @@ import sys
 import time
 import rclpy
 from std_msgs.msg import Bool, String
-from guidance import describe_sim_object
+from guidance import describe_estimate
 
 ROOT=Path(__file__).resolve().parents[1]
 rclpy.init(); node=rclpy.create_node('assistive_voice_guidance')
 text_pub=node.create_publisher(String,'/assistive/announcements',10)
-guide_pub=node.create_publisher(String,'/assistive/ground_truth/guidance',10)
+guide_pub=node.create_publisher(String,'/assistive/guidance',10)
 latest=[]; enabled=True; speaking=None; last_time=-100.; last_key=None
 
 def receive(msg):
     global latest
-    latest=[g for o in json.loads(msg.data)['objects'] if (g:=describe_sim_object(o)) is not None]
-    guide_pub.publish(String(data=json.dumps({'source':'webots_recognition_ground_truth','objects':latest},ensure_ascii=False)))
+    latest=[g for o in json.loads(msg.data)['objects'] if (g:=describe_estimate(o)) is not None]
+    guide_pub.publish(String(data=json.dumps({'source':'stereo_sgbm','objects':latest},ensure_ascii=False)))
 
 def enable(msg):
     global enabled
     enabled=msg.data
 
-node.create_subscription(String,'/assistive/ground_truth/objects',receive,2)
+node.create_subscription(String,'/assistive/perception/objects',receive,2)
 node.create_subscription(Bool,'/assistive/voice_enabled',enable,10)
-node.get_logger().info('Offline Korean voice enabled. Guidance source: SIMULATOR GROUND TRUTH. /assistive/voice_enabled controls audio.')
+node.get_logger().info('Offline Korean voice enabled. Distance/direction source: STEREO IMAGES. Class/bbox currently from simulator adapter. /assistive/voice_enabled controls audio.')
 try:
     while rclpy.ok():
         rclpy.spin_once(node,timeout_sec=.05)

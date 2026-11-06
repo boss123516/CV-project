@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-for component in voice viewer sim; do
+for component in voice viewer perception detector sim; do
   pid_file="$PROJECT_DIR/logs/$component.pid"
   if [[ -f "$pid_file" ]]; then
     demo_pid="$(cat "$pid_file")"
@@ -9,6 +9,10 @@ for component in voice viewer sim; do
       demo_group="$(ps -p "$demo_pid" -o pgid= | tr -d " ")"
       if [[ "$demo_group" == "$demo_pid" ]]; then
         kill -TERM -- "-$demo_pid"
+        for attempt in {1..40}; do
+          kill -0 -- "-$demo_pid" 2>/dev/null || break
+          sleep 0.05
+        done
       else
         kill -TERM "$demo_pid"
       fi

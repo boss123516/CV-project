@@ -2,9 +2,9 @@
 set -e
 PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mkdir -p "$PROJECT_DIR/logs"
-for component in sim viewer voice; do
+for component in sim detector perception viewer voice; do
   pid_file="$PROJECT_DIR/logs/$component.pid"
-  if [[ -f "$pid_file" ]] && kill -0 "$(cat "$pid_file")" 2>/dev/null; then
+  if [[ -f "$pid_file" ]] && kill -0 "$(cat "$pid_file")" 2>/dev/null && [[ "$(ps -p "$(cat "$pid_file")" -o stat=)" != Z* ]] && [[ "$(ps -p "$(cat "$pid_file")" -o args=)" == *"$PROJECT_DIR"* ]]; then
     echo "$component already running"
     continue
   fi
