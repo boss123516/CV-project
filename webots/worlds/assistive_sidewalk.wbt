@@ -6,8 +6,9 @@ WorldInfo {
   basicTimeStep 32
 }
 DEF OVERVIEW Viewpoint {
-  orientation -0.14424710640725608 0.3899370592013912 0.9094733982665486 0.7726155506271932
-  position -4 -6 4
+  orientation -0.16795769054754286 0.3651770768903671 0.9156614640246379 0.9309686379817355
+  position -4 -7 4.5
+  fieldOfView 1.0
   near 0.1
   far 95
   follow ""

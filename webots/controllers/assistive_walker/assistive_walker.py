@@ -46,7 +46,7 @@ class AssistiveWalker(Pedestrian):
         self.dt=int(self.getBasicTimeStep()); self.root=self.getSelf()
         self.position=self.root.getField('translation')
         self.viewpoint=self.getFromDef('OVERVIEW')
-        self.view_position=np.array([-4.,-6.,4.])
+        self.view_position=np.array([-4.,-7.,4.5])
         self.follow_view=True
         self.joints={name:self.root.getField(name) for name in self.joint_names}
         self.cane=self.getFromDef('CANE_SWEEP').getField('rotation')
@@ -129,7 +129,7 @@ class AssistiveWalker(Pedestrian):
         self.root_rotation.setSFRotation([0.,0.,1.,self.heading])
         self.cane.setSFRotation([0.,0.,1.,.34*math.sin(2*math.pi*cycle+math.pi/3)*blend])
         if self.follow_view:
-            desired=np.array([self.x-4.,self.y-6.,4.])
+            desired=np.array([self.x-4.,self.y-7.,4.5])
             if np.linalg.norm(desired-self.view_position)>8:self.view_position=desired
             self.view_position+=(desired-self.view_position)*min(1.,dt*2.5)
             self.viewpoint.getField('position').setSFVec3f(self.view_position.tolist())
