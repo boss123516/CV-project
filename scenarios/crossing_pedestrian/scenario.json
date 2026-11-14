@@ -1,0 +1,20 @@
+{
+  "id": "crossing_pedestrian",
+  "title_ko": "주차 차량 근처를 횡단하는 사람",
+  "version": 1,
+  "world": "webots/worlds/assistive_sidewalk.wbt",
+  "scene": "scenarios/urban_baseline/scene.json",
+  "route": {
+    "start_m": 28,
+    "end_m": 35,
+    "cruise_speed_mps": 0.45
+  },
+  "evaluation": {
+    "target_classes": [
+      "car",
+      "pedestrian"
+    ],
+    "max_visible_targets": 5
+  },
+  "notes": "Shared baseline world; the selected route is executed, not a screenshot-only preset."
+}

@@ -1,0 +1,93 @@
+{
+  "name": "neighborhood_sidewalk",
+  "route_end_m": 39.5,
+  "max_visible_targets": 5,
+  "path_xy": [
+    [
+      0,
+      0
+    ],
+    [
+      7,
+      0
+    ],
+    [
+      9,
+      -0.55
+    ],
+    [
+      13,
+      -0.55
+    ],
+    [
+      15,
+      0.1
+    ],
+    [
+      17,
+      0.45
+    ],
+    [
+      20,
+      0.45
+    ],
+    [
+      22,
+      -0.45
+    ],
+    [
+      27,
+      -0.45
+    ],
+    [
+      29.5,
+      0
+    ],
+    [
+      35,
+      0
+    ],
+    [
+      39.5,
+      0
+    ]
+  ],
+  "scenarios": [
+    {
+      "start_m": 0,
+      "id": "street_furniture",
+      "name_ko": "상가 앞 보도",
+      "challenge_ko": "벤치와 가로수 그림자 · 질감이 있는 보도"
+    },
+    {
+      "start_m": 7,
+      "id": "partial_occlusion",
+      "name_ko": "입간판과 낮은 장애물",
+      "challenge_ko": "입간판 뒤에 일부 가려진 낮은 말뚝 · 좁아진 통로"
+    },
+    {
+      "start_m": 14,
+      "id": "slender_obstacle",
+      "name_ko": "가로등 구간",
+      "challenge_ko": "배경과 색이 비슷한 가느다란 기둥 · 강한 명암"
+    },
+    {
+      "start_m": 21,
+      "id": "roadworks",
+      "name_ko": "보도 공사 구간",
+      "challenge_ko": "콘과 공사 펜스 때문에 줄어든 보행 공간"
+    },
+    {
+      "start_m": 28,
+      "id": "crossing_person",
+      "name_ko": "횡단 보행자",
+      "challenge_ko": "주차된 차 주변에서 보도를 가로지르는 사람"
+    },
+    {
+      "start_m": 35,
+      "id": "driveway",
+      "name_ko": "차량 진입부",
+      "challenge_ko": "보도 포장 변화 · 점자블록과 낮아진 경계석"
+    }
+  ]
+}

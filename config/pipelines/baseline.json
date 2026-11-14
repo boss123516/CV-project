@@ -1,0 +1,8 @@
+{
+  "name": "baseline",
+  "description": "Reproducible simulator boxes + image-based stereo depth",
+  "detector": {"backend": "simulator"},
+  "depth": {"backend": "sgbm", "calibration": "config/stereo_rig.json", "frame_cache_size": 64},
+  "guidance": {"max_distance_m": 6.0, "minimum_interval_s": 5.0},
+  "components": {"viewer": true, "voice": true}
+}

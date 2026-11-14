@@ -1,6 +1,6 @@
 # 스테레오로 물체의 거리·각도·시계 방향을 구하는 알고리즘
 
-구현: [`perception/stereo.py`](../perception/stereo.py), ROS 연결: [`perception/ros_node.py`](../perception/ros_node.py).
+구현: [`cv_project/depth/stereo.py`](../cv_project/depth/stereo.py), ROS 연결: [`cv_project/pipeline/stereo_node.py`](../cv_project/pipeline/stereo_node.py).
 
 이 코드는 물체의 알려진 크기나 시뮬레이터 좌표를 사용하지 않습니다. 입력은 동기화한 좌우 영상, 스테레오 보정값, 사람에 대한 카메라 설치 위치·자세, 물체의 이름과 bbox입니다.
 
@@ -17,7 +17,7 @@ flowchart LR
   H --> I[한국어 음성]
 ```
 
-현재 D는 별도 `sim_detection_adapter.py`가 제공합니다. 어댑터는 Webots 정답에서 **id, class, bbox만** 내보내며 정답 거리·위치는 버립니다. YOLO를 연결할 때 이 어댑터를 종료하고, 정류된 좌측 영상에서 탐지한 결과를 같은 인터페이스로 발행합니다.
+D는 선택한 탐지 backend가 제공합니다. `yolo26`은 정류된 좌측 영상에 실제 YOLO26 추론을 수행합니다. 재현용 `baseline`만 Webots 정답에서 **id, class, bbox, confidence만** 내보내며 정답 거리·위치는 버립니다. 두 모드는 동일한 공통 계약을 사용합니다.
 
 ## 1. 동기화와 보정
 
@@ -85,13 +85,13 @@ P_person = T_person_from_optical × [P_optical, 1]
 ```json
 {
   "stamp_ns": 1024000000,
-  "source": "yolo",
+  "source": "yolo26",
   "coordinate_space": "rectified_left",
-  "detections": [{"id": 1, "class": "signboard", "bbox_xyxy": [220, 160, 330, 370]}]
+  "detections": [{"id": 1, "class": "signboard", "bbox_xyxy": [220, 160, 330, 370], "confidence": 0.9}]
 }
 ```
 
-`stamp_ns`는 탐지에 사용한 **영상 촬영 시각**이며 추론 완료 시각이 아닙니다. 미래 YOLO 연결 시 `source`를 실제 모델에 맞게 지정하고, 클래스는 `object_classes.json`과 맞춥니다. id는 추적 id를 쓰는 것이 좋습니다.
+`stamp_ns`는 탐지에 사용한 **영상 촬영 시각**이며 추론 완료 시각이 아닙니다. 커스텀 YOLO 모델 연결 시 `source`를 실제 모델에 맞게 지정하고, 클래스는 `object_classes.json`과 맞춥니다. id는 추적 id를 쓰는 것이 좋습니다.
 
 성공한 측정에는 `valid`, `disparity_px`, `optical_xyz_m`, `person_xyz_m`, `depth_m`, `distance_m`, `forward_m`, `bearing_deg`, `clock_hour`, 픽셀 지지 수와 불확실성이 포함됩니다. 실패한 측정에는 `valid=false`, `reason`을 넣고 **거리·3D 위치를 출력하지 않습니다**. 정답값으로 채우는 fallback은 없습니다.
 

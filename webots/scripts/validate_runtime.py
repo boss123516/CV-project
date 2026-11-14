@@ -18,7 +18,7 @@ last_announce=None;paused=True;processing=[];start=time.monotonic();last_print=s
 def perception(msg):
     global packets,valid_count
     data=json.loads(msg.data);assert data['source']=='stereo_sgbm'
-    assert data['detector_source']=='webots_box_adapter_NOT_yolo'
+    assert data['detector_source'] in ['webots_box_adapter_NOT_yolo','yolo26']
     packets+=1;processing.append(data['processing_ms']);extrinsics[data['extrinsic_source']]+=1
     for obj in data['objects']:
         assert 'camera_position_m' not in obj
@@ -36,7 +36,7 @@ def detection(msg):
     global box_packets
     data=json.loads(msg.data);box_packets+=1
     for obj in data['detections']:
-        assert set(obj)=={'id','class','bbox_xyxy'},'Simulator geometry leaked into detection input'
+        assert set(obj)=={'id','class','bbox_xyxy','confidence'},'Simulator geometry leaked into detection input'
 
 def status(msg):
     global max_visible,paused

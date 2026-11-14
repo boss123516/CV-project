@@ -1,0 +1,19 @@
+{
+  "id": "slender_pole",
+  "title_ko": "가느다란 기둥과 배경 대비",
+  "version": 1,
+  "world": "webots/worlds/assistive_sidewalk.wbt",
+  "scene": "scenarios/urban_baseline/scene.json",
+  "route": {
+    "start_m": 14,
+    "end_m": 21,
+    "cruise_speed_mps": 0.6
+  },
+  "evaluation": {
+    "target_classes": [
+      "pole"
+    ],
+    "max_visible_targets": 5
+  },
+  "notes": "Shared baseline world; the selected route is executed, not a screenshot-only preset."
+}

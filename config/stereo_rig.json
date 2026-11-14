@@ -1,0 +1,19 @@
+{
+  "left_camera_to_person": {
+    "translation_m": [
+      0.235,
+      0.06,
+      1.615
+    ],
+    "downward_pitch_rad": 0.12,
+    "axes": "OpenCV optical: right, down, forward; person: forward, left, up"
+  },
+  "matcher": {
+    "num_disparities": 128,
+    "block_size": 5,
+    "min_distance_m": 0.6,
+    "max_distance_m": 10.0,
+    "lr_tolerance_px": 1.5,
+    "min_inlier_pixels": 24
+  }
+}

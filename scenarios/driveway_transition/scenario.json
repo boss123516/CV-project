@@ -1,0 +1,17 @@
+{
+  "id": "driveway_transition",
+  "title_ko": "차량 진입부의 포장과 경계석 변화",
+  "version": 1,
+  "world": "webots/worlds/assistive_sidewalk.wbt",
+  "scene": "scenarios/urban_baseline/scene.json",
+  "route": {
+    "start_m": 35,
+    "end_m": 39.5,
+    "cruise_speed_mps": 0.6
+  },
+  "evaluation": {
+    "target_classes": [],
+    "max_visible_targets": 5
+  },
+  "notes": "Shared baseline world; the selected route is executed, not a screenshot-only preset."
+}

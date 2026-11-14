@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -e
 PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$PROJECT_DIR/../scripts/env.sh"
 for component in voice viewer perception detector sim; do
-  pid_file="$PROJECT_DIR/logs/$component.pid"
+  pid_file="$CV_RUN_DIR/$component.pid"
   if [[ -f "$pid_file" ]]; then
     demo_pid="$(cat "$pid_file")"
-    if kill -0 "$demo_pid" 2>/dev/null && [[ "$(ps -p "$demo_pid" -o args=)" == *"$PROJECT_DIR"* ]]; then
+    if kill -0 "$demo_pid" 2>/dev/null && [[ "$(ps -p "$demo_pid" -o args=)" == *"$CV_PROJECT_ROOT"* ]]; then
       demo_group="$(ps -p "$demo_pid" -o pgid= | tr -d " ")"
       if [[ "$demo_group" == "$demo_pid" ]]; then
         kill -TERM -- "-$demo_pid"

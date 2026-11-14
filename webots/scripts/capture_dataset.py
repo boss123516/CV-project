@@ -20,7 +20,7 @@ if args.count<=0 or args.interval<=0: parser.error('count and interval must be p
 # Each invocation has its own run directory so earlier samples cannot be overwritten.
 out=args.output/time.strftime('%Y%m%d_%H%M%S')
 for sub in ['images','right_images','labels','metadata']: (out/sub).mkdir(parents=True,exist_ok=True)
-catalog=json.loads((Path(__file__).resolve().parents[1]/'config/object_classes.json').read_text())
+catalog=json.loads((Path(__file__).resolve().parents[2]/'config/object_classes.json').read_text())
 classes={name:definition['id'] for name,definition in catalog.items()}
 (out/'classes.txt').write_text('\n'.join(classes)+'\n')
 rclpy.init(); node=rclpy.create_node('assistive_dataset_capture')

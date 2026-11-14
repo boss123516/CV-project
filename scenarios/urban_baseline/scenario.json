@@ -1,0 +1,26 @@
+{
+  "id": "urban_baseline",
+  "title_ko": "상가 거리 전체 시나리오",
+  "version": 1,
+  "world": "webots/worlds/assistive_sidewalk.wbt",
+  "scene": "scenarios/urban_baseline/scene.json",
+  "route": {
+    "start_m": 0,
+    "end_m": 39.5,
+    "cruise_speed_mps": 0.72
+  },
+  "evaluation": {
+    "target_classes": [
+      "bench",
+      "signboard",
+      "bollard",
+      "pole",
+      "traffic_cone",
+      "barrier",
+      "car",
+      "pedestrian"
+    ],
+    "max_visible_targets": 5
+  },
+  "notes": "Shared baseline world; the selected route is executed, not a screenshot-only preset."
+}

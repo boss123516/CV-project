@@ -5,3 +5,15 @@ datasets/
 webots/logs/*
 !webots/logs/.gitkeep
 webots/worlds/.*.wbproj
+.local_tmp/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+*.pt
+*.onnx
+*.engine
+*.bag
+*.db3
+.env
+.env.*

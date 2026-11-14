@@ -11,6 +11,7 @@ from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Bool, Float32, String
 from tf2_ros import TransformBroadcaster
+from cv_project.config import scenario_config,runtime_dir
 from upstream_pedestrian import Pedestrian
 from walking_motion import walking_pose,STRIDE_M
 
@@ -51,7 +52,10 @@ class AssistiveWalker(Pedestrian):
         self.joints={name:self.root.getField(name) for name in self.joint_names}
         self.cane=self.getFromDef('CANE_SWEEP').getField('rotation')
         self.x=0.; self.y=0.; self.heading=0.; self.distance=0.; self.speed=.72; self.actual_speed=0.; self.paused=False
-        self.scene=json.loads((ROOT/"config/urban_scene.json").read_text())
+        self.scene=scenario_config()
+        self.route_start=self.scene['route_start_m']
+        self.x=self.route_start
+        self.speed=self.scene['cruise_speed_mps']
         self.path=np.array(self.scene["path_xy"],float)
         self.crossing_progress=None
         self.hold=0.; self.stations=set(); self.lap=0; self.frame=0
@@ -85,7 +89,7 @@ class AssistiveWalker(Pedestrian):
         self.node.get_logger().info('Urban route: fixed obstacles and a crossing pedestrian. Gait uses stance-foot IK. Perception runs in a separate stereo image node.')
 
     def reset_route(self):
-        self.x=0.;self.y=0.;self.heading=0.;self.distance=0.;self.actual_speed=0.
+        self.x=self.route_start;self.y=0.;self.heading=0.;self.distance=0.;self.actual_speed=0.
         self.stations.clear();self.hold=0.;self.lap+=1;self.crossing_progress=None
 
     def path_y(self,x):
@@ -179,11 +183,11 @@ class AssistiveWalker(Pedestrian):
                 objects.append({'id':obj.getId(),'class':label,'range_m':round(math.sqrt(sum(v*v for v in p)),3),'camera_position_m':p,'center_px':center,'size_px':size})
             self.ground_truth.publish(String(data=json.dumps({'source':'webots_recognition_ground_truth','simulation_time':seconds,'objects':objects})))
             if seconds-self.last_status>=.25:
-                state={'source':'simulation_only_no_yolo','simulation_time':round(seconds,3),'x_m':round(self.x,3),'y_m':round(self.y,3),'heading_rad':self.heading,'speed_mps':round(self.actual_speed,3),'requested_speed_mps':self.speed,'scenario_id':self.scenario['id'],'scenario_name_ko':self.scenario['name_ko'],'challenge_ko':self.scenario['challenge_ko'],'paused':self.paused,'holding':self.hold>0,'lap':self.lap,'frames':self.frame,'visible_objects':len(objects),'baseline_m':BASELINE,'objects':objects}
+                state={'source':'webots_simulator','simulation_time':round(seconds,3),'x_m':round(self.x,3),'y_m':round(self.y,3),'heading_rad':self.heading,'speed_mps':round(self.actual_speed,3),'requested_speed_mps':self.speed,'scenario_profile':self.scene['manifest']['id'],'scenario_id':self.scenario['id'],'scenario_name_ko':self.scenario['name_ko'],'challenge_ko':self.scenario['challenge_ko'],'paused':self.paused,'holding':self.hold>0,'lap':self.lap,'frames':self.frame,'visible_objects':len(objects),'baseline_m':BASELINE,'objects':objects}
                 self.status.publish(String(data=json.dumps(state))); self.last_status=seconds
-                (ROOT/'logs/status.json').write_text(json.dumps(state,indent=2))
+                (runtime_dir()/'status.json').write_text(json.dumps(state,indent=2))
             if seconds-self.last_save>=2:
-                for side,c,_,_,_ in self.cameras: c.saveImage(str(ROOT/f'logs/{side}_latest.png'),100)
+                for side,c,_,_,_ in self.cameras: c.saveImage(str(runtime_dir()/f'{side}_latest.png'),100)
                 self.last_save=seconds
         self.node.destroy_node(); rclpy.shutdown()
 

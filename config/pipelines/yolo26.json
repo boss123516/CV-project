@@ -1,0 +1,11 @@
+{
+  "name": "yolo26",
+  "description": "YOLO26 on rectified-left RGB + per-object stereo depth",
+  "detector": {
+    "backend": "yolo26", "weights": "models/yolo26n.pt", "confidence": 0.35,
+    "image_size": 640, "device": null, "class_map": {"person": "pedestrian"}
+  },
+  "depth": {"backend": "sgbm", "calibration": "config/stereo_rig.json", "frame_cache_size": 64},
+  "guidance": {"max_distance_m": 6.0, "minimum_interval_s": 5.0},
+  "components": {"viewer": true, "voice": true}
+}

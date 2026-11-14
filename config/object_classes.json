@@ -1,0 +1,10 @@
+{
+  "bench": {"id": 0, "name_ko": "벤치", "particle": "가"},
+  "traffic_cone": {"id": 1, "name_ko": "교통 콘", "particle": "이"},
+  "pedestrian": {"id": 2, "name_ko": "사람", "particle": "이"},
+  "signboard": {"id": 3, "name_ko": "입간판", "particle": "이"},
+  "bollard": {"id": 4, "name_ko": "낮은 말뚝", "particle": "이"},
+  "pole": {"id": 5, "name_ko": "가로등 기둥", "particle": "이"},
+  "barrier": {"id": 6, "name_ko": "공사 펜스", "particle": "가"},
+  "car": {"id": 7, "name_ko": "주차된 차", "particle": "가"}
+}

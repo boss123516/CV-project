@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cv-project"
+version = "0.1.0"
+description = "Modular Webots assistive-vision scenarios with YOLO26 and stereo object localization"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24,<3", "opencv-python>=4.8,<5", "Pillow>=9.2"]
+
+[project.optional-dependencies]
+yolo = ["ultralytics>=8.4.0,<9"]
+
+[project.scripts]
+cv-project = "cv_project.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["cv_project*", "perception*"]

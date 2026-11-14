@@ -1,0 +1,20 @@
+{
+  "id": "construction_passage",
+  "title_ko": "콘과 펜스로 좁아진 보행 통로",
+  "version": 1,
+  "world": "webots/worlds/assistive_sidewalk.wbt",
+  "scene": "scenarios/urban_baseline/scene.json",
+  "route": {
+    "start_m": 21,
+    "end_m": 28,
+    "cruise_speed_mps": 0.5
+  },
+  "evaluation": {
+    "target_classes": [
+      "traffic_cone",
+      "barrier"
+    ],
+    "max_visible_targets": 5
+  },
+  "notes": "Shared baseline world; the selected route is executed, not a screenshot-only preset."
+}

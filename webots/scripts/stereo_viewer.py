@@ -8,6 +8,7 @@ os.environ["QT_QPA_FONTDIR"]="/usr/share/fonts/truetype/dejavu"
 import numpy as np
 import rclpy
 from PIL import Image as PILImage, ImageDraw, ImageFont
+from cv_project.guidance.formatter import describe_estimate
 from sensor_msgs.msg import Image
 from std_msgs.msg import Bool, String
 
@@ -38,8 +39,9 @@ def on_guidance(msg):
     guidance=json.loads(msg.data)['objects']
 
 def on_perception(msg):
-    global perception
+    global perception,guidance
     perception=json.loads(msg.data)
+    guidance=[value for obj in perception.get('objects',[]) if (value:=describe_estimate(obj)) is not None]
 
 node.create_subscription(String,'/assistive/perception/objects',on_perception,4)
 node.create_subscription(String,'/assistive/announcements',on_announcement,10)
@@ -80,7 +82,7 @@ try:
         objects=perception.get('objects',[])
         reference='  /  '.join(f"{o['class']}: {o['distance_m']:.1f}m" if o['valid'] else f"{o['class']}: unavailable" for o in objects) or 'no target currently visible'
         cv2.putText(canvas,'STEREO DISTANCE: '+reference,(18,635),font,.51,(90,190,240),1,cv2.LINE_AA)
-        cv2.putText(canvas,f"SGBM {perception.get('processing_ms',0):.0f} ms  |  detector: SIM BOXES (YOLO pending)  |  distance / bearing: IMAGE MEASUREMENTS",(18,658),font,.43,(145,145,145),1,cv2.LINE_AA)
+        cv2.putText(canvas,f"SGBM {perception.get('processing_ms',0):.0f} ms  |  detector: {perception.get('detector_source','waiting')}  |  distance / bearing: IMAGE MEASUREMENTS",(18,658),font,.43,(145,145,145),1,cv2.LINE_AA)
         pil=PILImage.fromarray(cv2.cvtColor(canvas,cv2.COLOR_BGR2RGB)); draw=ImageDraw.Draw(pil)
         current=min(guidance,key=lambda g:g['distance_m'])['text'] if guidance else ('영상으로 거리를 측정할 수 없습니다.' if objects else '전방에 표시할 대상이 없습니다.')
         draw.text((18,673),current,font=korean_font,fill=(240,220,120))
