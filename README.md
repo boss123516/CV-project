@@ -17,24 +17,111 @@ flowchart LR
 
 **거리 알고리즘에 시뮬레이터의 물체 좌표를 넘기지 않습니다.** 탐지 모듈과 깊이 모듈 사이에는 촬영 시각, 물체 이름, bbox, confidence, 선택적 추적 ID만 전달합니다.
 
-## 빠른 시작
+## 설치와 실행
 
-환경: Ubuntu 22.04, Python 3.10, ROS 2 Humble, Webots R2025a. 설치와 다른 PC 설정은 [SETUP](docs/SETUP.md)을 참고하세요.
+아래 명령은 **Ubuntu 데스크톱의 Bash 터미널**에서 실행합니다. 프로젝트 설치 후에는 저장소 루트, 즉 `scripts/`와 `README.md`가 있는 폴더에서 명령을 실행하세요.
+
+### 1. 처음 사용하는 PC: 시스템 준비
+
+| 항목 | 실행 기준 |
+| --- | --- |
+| OS / Python | Ubuntu 22.04 / 시스템 Python 3.10 |
+| ROS | ROS 2 Humble; Desktop 설치 기준 |
+| 시뮬레이터 | Webots R2025a |
+| 화면·음성 | GUI가 열리는 데스크톱 세션, 음성 시연용 오디오 출력 |
+| GPU | 필수 아님; CPU에서도 실행 가능하며 처리 속도는 PC에 따라 달라짐 |
+
+먼저 [ROS 2 Humble 공식 설치 안내](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html)에 따라 ROS를 설치하고, [Webots R2025a 릴리스](https://github.com/cyberbotics/webots/releases/tag/R2025a)의 Ubuntu용 패키지를 설치합니다. 프로젝트의 `setup.sh`는 ROS와 Webots를 설치하지 않습니다.
+
+이후 필요한 시스템 패키지를 설치합니다. `ros-humble-tf2-ros`는 ROS 저장소 설정을 마친 뒤 설치할 수 있습니다.
 
 ```bash
-git clone git@github.com:boss123516/CV-project.git
+sudo apt update
+sudo apt install git python3-venv libgl1 fonts-noto-cjk espeak-ng pulseaudio-utils ros-humble-tf2-ros
+```
+
+Webots 실행 파일을 자동으로 찾지 못하면 실제 설치 경로를 지정합니다. 아래는 기본 `.deb` 설치 경로의 예시이며 다른 위치에 설치했다면 바꾸세요.
+
+```bash
+export WEBOTS_BIN=/usr/local/webots/webots
+```
+
+이 설정은 현재 터미널에 적용됩니다. 다른 터미널에서 실행할 때도 필요하면 다시 지정합니다. 다른 설치 경로와 Python 환경 설정은 [SETUP](docs/SETUP.md)을 참고하세요.
+
+### 2. 최초 1회: 프로젝트와 모델 설치
+
+```bash
+git clone https://github.com/boss123516/CV-project.git
 cd CV-project
+
+# 시스템 ROS Python 패키지를 함께 사용하는 .venv 생성 및 프로젝트 설치
 ./scripts/setup.sh --yolo
+
+# 기본 YOLO26n 가중치 다운로드; 학습을 시작하는 명령이 아님
 .venv/bin/python scripts/download_models.py
 
-# 실제 YOLO26 탐지 + 스테레오 깊이 + 전체 거리
-./scripts/run.sh --pipeline yolo26 --scenario signalized_crossing
+# 실행에 필요한 Python 패키지·Webots 경로·가중치 확인
+./scripts/doctor.sh --pipeline yolo26
+```
 
-# 종료
+설치와 모델 다운로드에는 인터넷 연결이 필요합니다. 가중치는 Git에 포함되지 않으며 다운로드 후 `models/yolo26n.pt`에 저장됩니다. `doctor` 결과가 모두 `true`이면 실행 단계로 넘어갑니다. `doctor`는 의존성 사전 검사이며 GUI·음성·시나리오 동작은 실제 실행으로 확인합니다.
+
+### 3. 실행: 신호등 횡단보도부터 확인
+
+설치를 마쳤다면 이후에는 저장소 루트에서 아래 명령으로 실행합니다.
+
+```bash
+./scripts/run.sh --pipeline yolo26 --scenario signalized_crossing
+```
+
+이 명령은 Webots, YOLO26 탐지, 스테레오 거리 계산, 카메라 모니터, 한국어 음성 안내를 함께 시작합니다. 실행 스크립트가 ROS 환경과 프로젝트 Python을 설정하므로 가상환경을 수동으로 activate할 필요는 없습니다.
+
+정상 실행 시 잠시 뒤 다음을 확인할 수 있습니다.
+
+- **Webots 창:** 보행자가 횡단보도로 접근하고, 차량이 지나가며 빨간불에 대기합니다. 초록불과 차량 정지 조건이 충족되면 건너가 목적지에 도착하고 시나리오를 반복합니다.
+- **Stereo ROS Monitor 창:** 좌우 카메라의 `LIVE` 영상, 탐지된 객체의 bbox·거리·시계 방향, 목적지·현재 행동·동선 지도가 표시됩니다.
+- **음성:** “빨간불입니다. 기다리세요.”, “초록불로 바뀌었습니다. 차량이 멈춘 것을 확인하고 건너세요.”를 들을 수 있습니다. 객체 안내는 탐지와 유효 거리 계산이 성공할 때 나옵니다.
+
+현재 신호와 보행 동작은 시나리오 제어이며, 신호 색상을 영상으로 판정한 결과가 아닙니다. 기본 YOLO26n은 프로젝트 전용 장애물을 모두 학습하지 않았으므로 화면에 보이는 모든 물체에 bbox가 뜨는 것은 아닙니다.
+
+실행 명령은 프로그램을 **백그라운드에서 시작한 뒤 터미널로 돌아옵니다.** 같은 터미널에서 상태를 확인할 수 있습니다.
+
+```bash
+source scripts/env.sh
+"$CV_PYTHON" -m cv_project status
+```
+
+기본 실행에서는 `sim`, `detector`, `perception`, `viewer`, `voice`의 `running`이 모두 `true`인지 확인합니다. `--no-viewer`나 `--no-voice`를 사용했다면 해당 구성 요소는 목록에서 제외됩니다.
+
+### 4. 다른 시나리오로 전환 / 종료
+
+다른 시나리오나 파이프라인으로 바꿀 때는 **기존 실행을 먼저 종료**합니다.
+
+```bash
+# 신호등 시나리오 종료 후 주거 골목의 접촉·후진·우회 시나리오 실행
+./scripts/stop.sh
+./scripts/run.sh --pipeline yolo26 --scenario residential_detour
+
+# 시연을 마치면 전체 구성 요소 종료
 ./scripts/stop.sh
 ```
 
-첫 실행 전 `./scripts/doctor.sh --pipeline yolo26`로 의존성과 체크포인트를 확인할 수 있습니다. `WEBOTS_BIN`, `ROS_SETUP`, `CV_PYTHON`으로 설치 위치를 지정할 수 있고, 기본 ROS_DOMAIN_ID는 71입니다.
+실행 가능한 전체 10개 ID는 아래 명령 또는 [목적지 시나리오](#목적지우회교통-시나리오)·[기존 구간 시나리오](#기존-기준-거리의-구간-시나리오)에서 확인합니다. `--scenario` 뒤의 ID만 바꾸면 됩니다.
+
+```bash
+source scripts/env.sh
+"$CV_PYTHON" -m cv_project list-scenarios
+```
+
+| 키 / 명령 | 동작 |
+| --- | --- |
+| `P` | Webots 또는 모니터에 포커스를 둔 상태에서 보행 정지·재개 |
+| `R` | Webots에 포커스를 둔 상태에서 보행 경로 재시작 |
+| `V` | Webots에 포커스를 둔 상태에서 외부 관찰 시점 추적 전환 |
+| `Q` | 모니터 창만 종료 |
+| `./scripts/stop.sh` | Webots·탐지·거리 계산·모니터·음성을 모두 종료 |
+
+`Q`로 모니터를 닫거나 실행 터미널에서 `Ctrl+C`를 누르는 것만으로는 전체 프로세스가 종료되지 않습니다. 전체 종료에는 `stop.sh`를 사용하세요.
 
 ## 두 가지 실행 모드
 
@@ -44,24 +131,44 @@ cd CV-project
 | `baseline` | Webots에서 가져온 임시 이름·bbox | 좌우 영상으로 계산 | 커스텀 학습 전 전체 흐름을 재현·검증 |
 
 ```bash
-# 임시 bbox를 쓰는 재현용 모드임을 명시적으로 선택
+# 먼저 실행 중인 시나리오 종료
+./scripts/stop.sh
+
+# 학습 전 프로젝트 장애물 bbox를 사용해 거리 계산 흐름 재현
 ./scripts/run.sh --pipeline baseline --scenario urban_baseline
 
-# 원하는 구간만 반복
+# 실제 YOLO26으로 횡단 보행자 구간 실행
+./scripts/stop.sh
 ./scripts/run.sh --pipeline yolo26 --scenario crossing_pedestrian
 
-# 외부 창과 음성 없이 실행
+# 카메라 모니터·음성 없이 실행; Webots GUI는 계속 열림
+./scripts/stop.sh
 ./scripts/run.sh --pipeline baseline --scenario occluded_sign --no-viewer --no-voice
-
-# 현재 실행 상태 / 시나리오 목록
-source scripts/env.sh
-python3 -m cv_project status
-python3 -m cv_project list-scenarios
 ```
 
-파이프라인·시나리오를 전환할 때는 기존 실행을 먼저 종료합니다. `P`는 보행 정지/재개, Webots의 `R`은 경로 재시작, `V`는 외부 관찰 시점 추적 전환, 모니터의 `Q`는 모니터만 종료합니다.
+`baseline`은 시뮬레이터의 이름·bbox를 쓰는 재현용 모드이므로 YOLO 학습 성능을 보여주는 모드와 구분합니다. 두 모드 모두 거리는 좌우 영상에서 계산합니다. 기본 `ROS_DOMAIN_ID`는 71이며, 상태 확인용 터미널에서도 `scripts/env.sh`를 source하면 같은 설정을 사용합니다.
 
 기본 YOLO26n 체크포인트는 COCO 사전학습 모델입니다. 사람·차·벤치 등의 시작점으로 사용할 수 있지만, 현재 월드의 입간판·낮은 말뚝·기둥·콘 등 프로젝트 클래스 전체가 학습되어 있는 것은 아닙니다. **프로젝트 클래스 학습과 실제 환경 정확도 평가는 앞으로 진행할 작업입니다.** 탐지가 없거나 깊이 측정에 실패하면 정답값으로 대체하지 않습니다.
+
+## 실행이 안 될 때
+
+| 증상 | 확인·조치 |
+| --- | --- |
+| `webots: false` 또는 Webots 경로 오류 | `WEBOTS_BIN`을 실제 실행 파일로 지정하고 `doctor` 재실행 |
+| `rclpy: false` 또는 ROS 모듈 import 오류 | ROS 2 Humble 설치와 `/opt/ros/humble/setup.bash` 확인; 다른 설치 위치는 `ROS_SETUP`으로 지정. 별도 Python을 쓰면 시스템 ROS 바인딩 접근 여부 확인 |
+| `model_weights: false` | `.venv/bin/python scripts/download_models.py`로 가중치 다운로드 |
+| `ultralytics: false` | `./scripts/setup.sh --yolo`로 YOLO 의존성 설치 |
+| `A different pipeline/scenario is running` | `./scripts/stop.sh`로 종료한 뒤 원하는 설정으로 다시 실행 |
+| 창이 열리지 않거나 Qt/display 오류 | GUI가 열리는 데스크톱 세션에서 실행. `--no-viewer`만으로 Webots가 headless 실행되는 것은 아님 |
+| 음성이 들리지 않음 | 시스템 오디오 출력·음소거 상태와 `espeak-ng`, `paplay` 설치 확인; 음성이 필요 없으면 종료 후 `--no-voice`를 붙여 재실행 |
+| 모니터가 계속 `WAITING FOR TOPIC`이거나 구성 요소가 종료됨 | `status`와 아래 로그에서 simulator/controller·탐지·거리 노드 오류 확인 |
+
+```bash
+./scripts/doctor.sh --pipeline yolo26
+tail -n 40 webots/logs/sim.log webots/logs/detector.log webots/logs/perception.log webots/logs/viewer.log webots/logs/voice.log
+```
+
+로그와 PID는 기본적으로 `webots/logs/`에 저장합니다. `CV_RUN_DIR`을 지정했다면 해당 디렉터리를 확인하세요. 자세한 설치 경로 설정은 [SETUP](docs/SETUP.md)에 있습니다.
 
 ## 학습할 객체
 
