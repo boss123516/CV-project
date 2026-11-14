@@ -4,11 +4,12 @@ from cv_project.contracts import Detection
 
 
 class YOLO26Detector:
-    def __init__(self, weights, confidence=.35, image_size=640, device=None, class_map=None, model=None):
+    def __init__(self, weights, confidence=.35, image_size=640, device=None, class_map=None, model=None, class_allowlist=None):
         self.confidence = float(confidence)
         self.image_size = int(image_size)
         self.device = device
         self.class_map = class_map or {}
+        self.class_allowlist=set(class_allowlist) if class_allowlist is not None else None
         if model is None:
             weights = resolve_path(weights)
             if not weights.is_file():
@@ -34,6 +35,8 @@ class YOLO26Detector:
         for box, score, index in zip(xyxy, scores, classes):
             name = str(result.names[int(index)])
             name = self.class_map.get(name, name)
+            if self.class_allowlist is not None and name not in self.class_allowlist:
+                continue
             # No tracking ID is invented; consumers can use the class as a speech key.
             detections.append(Detection(name, tuple(box), float(score), None))
         return detections

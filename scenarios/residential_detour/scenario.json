@@ -1,0 +1,21 @@
+{
+  "id": "residential_detour",
+  "title_ko": "주거 골목 · 펜스 접촉 후 옆 골목 우회",
+  "version": 2,
+  "world": "webots/worlds/residential_detour.wbt",
+  "scene": "scenarios/residential_detour/scene.json",
+  "route": {
+    "start_m": 0,
+    "end_m": 32.0,
+    "cruise_speed_mps": 0.68
+  },
+  "evaluation": {
+    "target_classes": [
+      "barrier",
+      "pedestrian",
+      "planter"
+    ],
+    "max_visible_targets": 8
+  },
+  "notes": "Distinct world and destination mission. Contacts and detours are explicit scenario choreography, not perception-driven navigation."
+}

@@ -1,0 +1,98 @@
+{
+  "schema_version": 2,
+  "name": "signalized_crossing",
+  "mission": {
+    "start": [
+      0,
+      -9.0
+    ],
+    "heading_rad": 1.5707963267948966,
+    "destination": {
+      "name_ko": "횡단보도 건너편 보도",
+      "position": [
+        3,
+        7
+      ]
+    },
+    "repeat_after_s": 7,
+    "traffic_signal": {
+      "source": "scenario_script"
+    },
+    "road": {
+      "bounds": [
+        -17,
+        -3.6,
+        17,
+        3.6
+      ]
+    },
+    "obstacles": [],
+    "actions": [
+      {
+        "id": "approach_signal",
+        "kind": "walk",
+        "waypoints": [
+          [
+            0,
+            -4.5
+          ]
+        ],
+        "speed_mps": 0.68,
+        "caption_ko": "횡단보도 앞 경계석으로 접근"
+      },
+      {
+        "id": "red_wait",
+        "kind": "signal_wait",
+        "caption_ko": "빨간불 · 차량이 지나가는 동안 대기"
+      },
+      {
+        "id": "cross_road",
+        "kind": "walk",
+        "waypoints": [
+          [
+            0,
+            4.5
+          ]
+        ],
+        "speed_mps": 0.68,
+        "caption_ko": "초록불과 차량 정지 확인 후 횡단"
+      },
+      {
+        "id": "to_destination",
+        "kind": "walk",
+        "waypoints": [
+          [
+            0.8,
+            6
+          ],
+          [
+            3,
+            7
+          ]
+        ],
+        "speed_mps": 0.65,
+        "caption_ko": "건너편 보도로 이동"
+      },
+      {
+        "id": "destination",
+        "kind": "arrive",
+        "caption_ko": "목적지 도착",
+        "duration_s": 7
+      }
+    ]
+  },
+  "ground_profile": {
+    "axis": "y",
+    "road_half_width": 3.6,
+    "ramp_outer": 4.3,
+    "road_level_m": -0.12
+  },
+  "scenarios": [
+    {
+      "start_m": 0,
+      "id": "signalized_crossing",
+      "name_ko": "신호등 횡단보도",
+      "challenge_ko": "빨간불 접근 · 차량 통행 · 대기 안내 · 초록불 횡단"
+    }
+  ]
+}

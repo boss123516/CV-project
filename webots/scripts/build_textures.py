@@ -59,21 +59,12 @@ def generate():
         for x in range(26,256,51):
             d.ellipse((x-12,y-12,x+12,y+12),fill=(245,205,84))
     blister.save(OUT/'blister.png')
-    signs=[('cafe.png','온유 커피','COFFEE & BAKERY',(39,66,64)),('market.png','우리 동네 마켓','LOCAL MARKET',(63,87,64)),('studio.png','한결 안경','OPTICAL STUDIO',(51,66,90))]
-    for filename,title,subtitle,color in signs:
-        im=Image.new('RGB',(1024,256),color);d=ImageDraw.Draw(im)
-        d.rounded_rectangle((12,12,1012,244),radius=8,outline=(203,187,149),width=3)
-        d.text((512,90),title,font=font(88),fill=(244,237,213),anchor='mm')
-        d.text((512,197),subtitle,font=font(28),fill=(197,189,165),anchor='mm')
-        im.save(OUT/filename)
-    im=Image.new('RGB',(512,768),(32,52,51));d=ImageDraw.Draw(im)
-    d.rectangle((17,17,495,751),outline=(206,182,136),width=10)
-    d.text((256,150),'OPEN',font=font(94),fill=(243,228,191),anchor='mm')
-    d.text((256,300),'오늘의 커피',font=font(55),fill=(246,239,219),anchor='mm')
-    d.text((256,413),'TAKE OUT',font=font(44),fill=(218,202,167),anchor='mm')
-    d.text((256,555),'3,000',font=font(100),fill=(246,239,219),anchor='mm')
-    d.text((256,680),'잠시 쉬어 가세요',font=font(32),fill=(218,202,167),anchor='mm')
-    im.resize((512,1024),Image.Resampling.LANCZOS).save(OUT/'menu.png')
+    # An unbranded, weathered blank panel instead of shop/menu lettering.
+    panel=noise_texture('menu.png',(53,62,60),4,seed=31)
+    d=ImageDraw.Draw(panel)
+    d.rectangle((14,14,498,498),outline=(111,106,91),width=8)
+    for y in [102,199,302,411]:d.line((60,y,430,y+3),fill=(66,75,72),width=2)
+    panel.save(OUT/'menu.png')
     im=Image.new('RGB',(1024,256),(235,183,43));d=ImageDraw.Draw(im)
     for x in range(-256,1100,128): d.polygon([(x,0),(x+66,0),(x+322,256),(x+256,256)],fill=(42,43,40))
     d.rectangle((267,48,757,208),fill=(241,231,208))

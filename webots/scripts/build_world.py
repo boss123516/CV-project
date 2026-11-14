@@ -59,11 +59,10 @@ def facade(x,y,width,height,index,opposite=False):
             children+=box(wx+.75,side*.51,.43,.7,.025,.28,'0.53 0.38 0.22')
         children+=box(0,side*.48,1.24,1.10,.1,2.4,'0.06 0.13 0.15',rough=.2)
         children+=box(.38,side*.57,1.1,.045,.06,.45,'0.80 0.79 0.72',metal=.65)
-        texture=['cafe.png','market.png','studio.png'][index%3]
-        children+=box(0,side*.55,2.77,width-.7,.10,.70,texture=texture)
-        awning=['0.12 0.27 0.24','0.48 0.24 0.16','0.16 0.23 0.34'][index%3]
-        children+=box(0,side*.92,2.42,width-.6,1.3,.10,awning,rotation=f'1 0 0 {side*.10}')
-        children+=box(0,side*1.58,2.26,width-.6,.055,.23,awning)
+        children+=box(0,side*.48,2.77,width-.7,.08,.35,'0.65 0.65 0.60',texture='concrete.png')
+        awning='0.34 0.36 0.34'
+        children+=box(0,side*.92,2.42,width-.6,.70,.08,awning,rotation=f'1 0 0 {side*.10}')
+        children+=box(0,side*1.20,2.31,width-.6,.055,.23,awning)
     return solid(f'BUILDING_{"FAR" if opposite else "SHOP"}_{index}',children,(x,y,0))
 
 

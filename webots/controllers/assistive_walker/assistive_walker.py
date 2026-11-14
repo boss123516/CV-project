@@ -12,6 +12,7 @@ from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Bool, Float32, String
 from tf2_ros import TransformBroadcaster
 from cv_project.config import scenario_config,runtime_dir
+from cv_project.simulation.mission import MissionDriver
 from upstream_pedestrian import Pedestrian
 from walking_motion import walking_pose,STRIDE_M
 
@@ -52,16 +53,26 @@ class AssistiveWalker(Pedestrian):
         self.joints={name:self.root.getField(name) for name in self.joint_names}
         self.cane=self.getFromDef('CANE_SWEEP').getField('rotation')
         self.x=0.; self.y=0.; self.heading=0.; self.distance=0.; self.speed=.72; self.actual_speed=0.; self.paused=False
+        self.ground_level=0.
         self.scene=scenario_config()
         self.route_start=self.scene['route_start_m']
         self.x=self.route_start
         self.speed=self.scene['cruise_speed_mps']
-        self.path=np.array(self.scene["path_xy"],float)
+        self.mission=MissionDriver(self.scene['mission'],self.speed) if 'mission' in self.scene else None
+        self.path=np.array(self.scene.get('path_xy',[]),float)
+        if self.mission:
+            self.x,self.y=self.mission.x,self.mission.y
+            self.heading=self.mission.heading
+        self.last_mission_event=0
+        self.ground_level=0.
         self.crossing_progress=None
         self.hold=0.; self.stations=set(); self.lap=0; self.frame=0
         self.target_person=self.getFromDef('TARGET_PERSON')
         self.target_person_joints={name:self.target_person.getField(name) for name in self.joint_names}
         self.root_rotation=self.root.getField('rotation')
+        self.traffic_car_nodes={name:self.getFromDef(name) for name in ['TRAFFIC_CAR_A','TRAFFIC_CAR_B']} if self.mission and self.mission.traffic else {}
+        self.signal_apps={name:self.getFromDef('PED_'+name+'_APP') for name in ['RED','GREEN']} if self.mission and self.mission.traffic else {}
+        self.last_signal=None
         self.last_publish=-1.; self.last_status=-1.; self.last_save=-1.
         self.scenario=self.scene["scenarios"][0]
         self.keyboard=self.getKeyboard(); self.keyboard.enable(self.dt); self.previous_key=-1
@@ -69,6 +80,7 @@ class AssistiveWalker(Pedestrian):
         self.clock=self.node.create_publisher(Clock,'/clock',10)
         self.status=self.node.create_publisher(String,'/assistive/status',10)
         self.ground_truth=self.node.create_publisher(String,'/assistive/ground_truth/objects',10)
+        self.mission_events=self.node.create_publisher(String,'/assistive/mission/events',10)
         self.tf=TransformBroadcaster(self.node)
         self.node.create_subscription(Bool,'/assistive/pause',lambda m:setattr(self,'paused',m.data),10)
         self.node.create_subscription(Float32,'/assistive/speed',lambda m:setattr(self,'speed',max(0.,min(1.2,float(m.data)))),10)
@@ -86,9 +98,12 @@ class AssistiveWalker(Pedestrian):
         pitch=.12; cp=math.cos(pitch); sp=math.sin(pitch)
         self.camera_rotation=np.array([[cp,0,sp],[0,1,0],[-sp,0,cp]]) @ np.array([[0,0,1],[-1,0,0],[0,-1,0]])
         self.node.get_logger().info('Stereo ready: /assistive/stereo/{left,right}/image_raw | 640x480 | 15.625 Hz | baseline 0.12 m')
-        self.node.get_logger().info('Urban route: fixed obstacles and a crossing pedestrian. Gait uses stance-foot IK. Perception runs in a separate stereo image node.')
+        self.node.get_logger().info(('Destination mission with scripted events and curved walking. ' if self.mission else 'Baseline street route. ')+'Perception runs independently on stereo images.')
 
     def reset_route(self):
+        if self.mission:
+            self.mission.reset()
+            self.last_mission_event=0
         self.x=self.route_start;self.y=0.;self.heading=0.;self.distance=0.;self.actual_speed=0.
         self.stations.clear();self.hold=0.;self.lap+=1;self.crossing_progress=None
 
@@ -100,7 +115,7 @@ class AssistiveWalker(Pedestrian):
         m1=(self.path[i1,1]-y0)/(self.path[i1,0]-x0)
         return float((2*t**3-3*t*t+1)*y0+(t**3-2*t*t+t)*m0*(x1-x0)+(-2*t**3+3*t*t)*y1+(t**3-t*t)*m1*(x1-x0))
 
-    def update_walking(self):
+    def update_legacy_walking(self):
         dt=self.dt/1000
         key=self.keyboard.getKey()
         if key!=self.previous_key:
@@ -152,6 +167,91 @@ class AssistiveWalker(Pedestrian):
         self.scenario=next(s for s in reversed(self.scene['scenarios']) if self.x>=s['start_m'])
         return height-1.27
 
+    def update_tracking_view(self,dt):
+        if not self.follow_view:return
+        forward=np.array([math.cos(self.heading),math.sin(self.heading),0.])
+        left=np.array([-math.sin(self.heading),math.cos(self.heading),0.])
+        position=np.array([self.x,self.y,0.])
+        desired=position-forward*4.5-left*6+np.array([0.,0.,4.5])
+        if np.linalg.norm(desired-self.view_position)>9:self.view_position=desired
+        self.view_position+=(desired-self.view_position)*min(1.,dt*2.0)
+        target=position+forward*1.2+np.array([0.,0.,1.0])
+        look=target-self.view_position;look/=np.linalg.norm(look)
+        right=np.cross(look,[0.,0.,1.]);right/=np.linalg.norm(right)
+        up=np.cross(right,look)
+        q=quaternion(np.column_stack([look,-right,up]))
+        axis=np.array(q[:3]);norm=np.linalg.norm(axis)
+        if norm>1e-8:
+            axis/=norm;angle=2*math.atan2(norm,q[3])
+            self.viewpoint.getField('orientation').setSFRotation([*axis.tolist(),angle])
+        self.viewpoint.getField('position').setSFVec3f(self.view_position.tolist())
+
+    def update_walking(self):
+        if self.mission is None:return self.update_legacy_walking()
+        dt=self.dt/1000
+        key=self.keyboard.getKey()
+        if key!=self.previous_key:
+            if key in [ord('P'),ord(' ')]:self.paused=not self.paused
+            if key==ord('R'):self.reset_route()
+            if key==ord('V'):self.follow_view=not self.follow_view
+        self.previous_key=key
+        self.mission.cruise_speed=self.speed
+        sample=self.mission.step(dt,self.paused)
+        if sample.lap!=self.lap:
+            self.crossing_progress=None;self.last_mission_event=0;self.distance=0.
+        self.lap=sample.lap
+        self.x,self.y,self.heading=sample.x,sample.y,sample.heading
+        self.actual_speed=abs(sample.speed)
+        self.distance+=sample.signed_distance
+        self.hold=1. if sample.phase in ['contact','scan','wait','signal_wait','arrive'] else 0.
+        cycle=self.distance/STRIDE_M;blend=min(1.,self.actual_speed/.18)
+        profile=self.scene.get('ground_profile')
+        self.ground_level=0.
+        if profile:
+            amount=max(0.,min(1.,(profile['ramp_outer']-abs(self.y))/(profile['ramp_outer']-profile['road_half_width'])))
+            self.ground_level=profile['road_level_m']*amount
+        height=1.215+.006*math.cos(4*math.pi*cycle)*blend
+        for name,value in walking_pose(self.distance,height,self.actual_speed).items():
+            self.joints[name].setSFFloat(value)
+        self.position.setSFVec3f([self.x,self.y,height+self.ground_level])
+        self.root_rotation.setSFRotation([0.,0.,1.,self.heading])
+        sweep=.10*math.sin(self.mission.elapsed*8) if sample.phase=='contact' else .34*math.sin(2*math.pi*cycle+math.pi/3)*blend
+        self.cane.setSFRotation([0.,0.,1.,sweep])
+        self.update_tracking_view(dt)
+        if self.mission.traffic:
+            traffic=self.mission.traffic
+            for car in traffic.cars:
+                node=self.traffic_car_nodes[car['id']]
+                node.getField('translation').setSFVec3f([car['x'],car['y'],-.12])
+                node.getField('rotation').setSFRotation([0.,0.,1.,0. if car['direction']==1 else math.pi])
+            signal=traffic.pedestrian_signal
+            if signal!=self.last_signal:
+                for name,node in self.signal_apps.items():
+                    active=(name.lower()==signal)
+                    bright=[1.,.04,.015] if name=='RED' else [.025,.90,.14]
+                    dark=[.075,.022,.015] if name=='RED' else [.01,.065,.025]
+                    node.getField('baseColor').setSFColor(bright if active else dark)
+                    node.getField('emissiveColor').setSFColor(bright if active else [0.,0.,0.])
+                self.last_signal=signal
+        actor=self.scene.get('actor')
+        if actor:
+            trigger=next(i for i,a in enumerate(self.mission.actions) if a['id']==actor['trigger_action'])
+            if self.mission.index>=trigger and self.crossing_progress is None:self.crossing_progress=0.
+            start=np.array(actor['start'],float);end=np.array(actor['end'],float)
+            length=float(np.linalg.norm(end-start))
+            if self.crossing_progress is not None and not self.paused:
+                self.crossing_progress=min(length,self.crossing_progress+actor['speed_mps']*dt)
+            progress=self.crossing_progress or 0.
+            xy=start+(end-start)*min(1.,progress/max(length,1e-6))
+            yaw=math.atan2(end[1]-start[1],end[0]-start[0])
+            self.target_person.getField('translation').setSFVec3f([float(xy[0]),float(xy[1]),1.215])
+            self.target_person.getField('rotation').setSFRotation([0.,0.,1.,yaw])
+            speed=actor['speed_mps'] if self.crossing_progress is not None and progress<length else 0.
+            for name,value in walking_pose(progress,1.215,speed).items():
+                self.target_person_joints[name].setSFFloat(value)
+        self.scenario=dict(self.scene['scenarios'][0],challenge_ko=sample.caption)
+        return height+self.ground_level-1.27
+
     def run(self):
         while rclpy.ok():
             rclpy.spin_once(self.node,timeout_sec=0.)
@@ -160,12 +260,16 @@ class AssistiveWalker(Pedestrian):
             seconds=self.getTime(); ns=round(seconds*1e9)
             stamp=Time(sec=ns//10**9,nanosec=ns%10**9)
             self.clock.publish(Clock(clock=stamp))
+            if self.mission:
+                for event in self.mission.events[self.last_mission_event:]:
+                    self.mission_events.publish(String(data=json.dumps(dict(event,simulation_time=seconds,lap=self.lap),ensure_ascii=False)))
+                self.last_mission_event=len(self.mission.events)
             # Pose is set before step; camera pixels, time and TF describe the same simulation tick.
             c=math.cos(self.heading);s=math.sin(self.heading)
             yaw_rotation=np.array([[c,-s,0.],[s,c,0.],[0.,0.,1.]])
-            transforms=[tf_message('world','assistive/base_link',[self.x,self.y,0],yaw_rotation,stamp)]
+            transforms=[tf_message('world','assistive/base_link',[self.x,self.y,self.ground_level],yaw_rotation,stamp)]
             for side,c,_,_,_ in self.cameras:
-                transforms.append(tf_message('assistive/base_link',f'assistive/{side}_camera_optical_frame',[.235,.06 if side=='left' else -.06,1.67+bob],self.camera_rotation,stamp))
+                transforms.append(tf_message('assistive/base_link',f'assistive/{side}_camera_optical_frame',[.235,.06 if side=='left' else -.06,1.67+bob-self.ground_level],self.camera_rotation,stamp))
             self.tf.sendTransform(transforms)
             if ns % (PERIOD_MS*1_000_000) != 0: continue
             self.last_publish=seconds
@@ -184,6 +288,7 @@ class AssistiveWalker(Pedestrian):
             self.ground_truth.publish(String(data=json.dumps({'source':'webots_recognition_ground_truth','simulation_time':seconds,'objects':objects})))
             if seconds-self.last_status>=.25:
                 state={'source':'webots_simulator','simulation_time':round(seconds,3),'x_m':round(self.x,3),'y_m':round(self.y,3),'heading_rad':self.heading,'speed_mps':round(self.actual_speed,3),'requested_speed_mps':self.speed,'scenario_profile':self.scene['manifest']['id'],'scenario_id':self.scenario['id'],'scenario_name_ko':self.scenario['name_ko'],'challenge_ko':self.scenario['challenge_ko'],'paused':self.paused,'holding':self.hold>0,'lap':self.lap,'frames':self.frame,'visible_objects':len(objects),'baseline_m':BASELINE,'objects':objects}
+                if self.mission:state['mission']=dict(self.mission.status(),map=self.mission.map_data())
                 self.status.publish(String(data=json.dumps(state))); self.last_status=seconds
                 (runtime_dir()/'status.json').write_text(json.dumps(state,indent=2))
             if seconds-self.last_save>=2:

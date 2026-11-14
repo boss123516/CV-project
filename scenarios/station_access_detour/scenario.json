@@ -1,0 +1,21 @@
+{
+  "id": "station_access_detour",
+  "title_ko": "역 앞 광장 · 횡단 보행자 대기와 진입로 우회",
+  "version": 2,
+  "world": "webots/worlds/station_access_detour.wbt",
+  "scene": "scenarios/station_access_detour/scene.json",
+  "route": {
+    "start_m": 0,
+    "end_m": 25.7,
+    "cruise_speed_mps": 0.68
+  },
+  "evaluation": {
+    "target_classes": [
+      "barrier",
+      "pedestrian",
+      "planter"
+    ],
+    "max_visible_targets": 8
+  },
+  "notes": "Distinct world and destination mission. Contacts and detours are explicit scenario choreography, not perception-driven navigation."
+}

@@ -1,0 +1,150 @@
+{
+  "schema_version": 2,
+  "name": "station_access_detour",
+  "mission": {
+    "start": [
+      -7,
+      -2
+    ],
+    "heading_rad": 0,
+    "destination": {
+      "name_ko": "역사 출입구",
+      "position": [
+        8,
+        7
+      ]
+    },
+    "actions": [
+      {
+        "id": "to_crossing",
+        "kind": "walk",
+        "waypoints": [
+          [
+            -3,
+            -2
+          ]
+        ],
+        "caption_ko": "역사 출입구 방향으로 이동",
+        "speed_mps": 0.68
+      },
+      {
+        "id": "yield",
+        "kind": "wait",
+        "duration_s": 3.0,
+        "caption_ko": "앞을 지나는 보행자에게 양보"
+      },
+      {
+        "id": "approach",
+        "kind": "walk",
+        "waypoints": [
+          [
+            2.1,
+            -2
+          ]
+        ],
+        "caption_ko": "직접 진입로로 접근",
+        "speed_mps": 0.6
+      },
+      {
+        "id": "tap",
+        "kind": "contact",
+        "duration_s": 1.0,
+        "caption_ko": "진입로 펜스에 지팡이가 닿음 · 접촉 연출"
+      },
+      {
+        "id": "retreat",
+        "kind": "backtrack",
+        "waypoints": [
+          [
+            1.25,
+            -2
+          ]
+        ],
+        "caption_ko": "막힌 진입로에서 물러남",
+        "speed_mps": 0.28
+      },
+      {
+        "id": "look",
+        "kind": "scan",
+        "duration_s": 2.7,
+        "caption_ko": "대체 접근로를 확인"
+      },
+      {
+        "id": "access_route",
+        "kind": "detour",
+        "waypoints": [
+          [
+            1.25,
+            1.3
+          ],
+          [
+            5,
+            1.3
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            8,
+            5
+          ]
+        ],
+        "caption_ko": "옆 접근로를 이용해 입구로 우회",
+        "speed_mps": 0.6
+      },
+      {
+        "id": "to_entrance",
+        "kind": "walk",
+        "waypoints": [
+          [
+            8,
+            7
+          ]
+        ],
+        "caption_ko": "역사 출입구로 접근",
+        "speed_mps": 0.55
+      },
+      {
+        "id": "destination",
+        "kind": "arrive",
+        "duration_s": 6,
+        "caption_ko": "목적지 도착"
+      }
+    ],
+    "obstacles": [
+      {
+        "id": "MISSION_BARRIER",
+        "center": [
+          3,
+          -2
+        ],
+        "half_extents": [
+          0.3,
+          1.4
+        ]
+      }
+    ],
+    "repeat_after_s": 6
+  },
+  "actor": {
+    "start": [
+      -2,
+      -4.6
+    ],
+    "end": [
+      -2,
+      0.6
+    ],
+    "trigger_action": "yield",
+    "speed_mps": 0.8
+  },
+  "scenarios": [
+    {
+      "start_m": 0,
+      "id": "station_access_detour",
+      "name_ko": "역 앞 광장 · 횡단 보행자 대기와 진입로 우회",
+      "challenge_ko": "목적지 이동 · 접촉 연출 · 후진 · 우회 · 도착"
+    }
+  ]
+}

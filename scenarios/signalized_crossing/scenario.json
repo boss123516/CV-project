@@ -1,0 +1,20 @@
+{
+  "id": "signalized_crossing",
+  "title_ko": "신호등 횡단보도 · 차량 통행과 보행 신호 대기",
+  "version": 2,
+  "world": "webots/worlds/signalized_crossing.wbt",
+  "scene": "scenarios/signalized_crossing/scene.json",
+  "route": {
+    "start_m": 0,
+    "end_m": 18.5,
+    "cruise_speed_mps": 0.68
+  },
+  "evaluation": {
+    "target_classes": [
+      "car",
+      "traffic_light"
+    ],
+    "max_visible_targets": 8
+  },
+  "notes": "Pedestrian signal and vehicle motion are scripted. Color classification is not claimed as YOLO perception."
+}

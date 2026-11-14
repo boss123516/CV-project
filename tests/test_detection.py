@@ -31,3 +31,10 @@ class DetectorTests(unittest.TestCase):
 
     def test_missing_weights_do_not_fall_back_to_simulator(self):
         with self.assertRaises(FileNotFoundError):YOLO26Detector('/definitely/missing/yolo26.pt')
+
+
+class ScopeFilterTests(unittest.TestCase):
+    def test_scope_filter_drops_unrequested_classes_without_relabeling_them(self):
+        model=ModelStub()
+        detector=YOLO26Detector('unused',model=model,class_allowlist=['car'])
+        self.assertEqual(detector.detect(np.zeros((240,320,3),np.uint8)),[])

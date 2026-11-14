@@ -25,7 +25,7 @@
 
 ## 시나리오 추가
 
-현재 여섯 시나리오는 `webots/worlds/assistive_sidewalk.wbt`를 공유합니다. `scenarios/<id>/scenario.json`을 복사해 새 ID를 만들고 시작·종료 위치와 속도, 목표 클래스를 설정합니다.
+기존 여섯 구간 시나리오는 `webots/worlds/assistive_sidewalk.wbt`를 공유합니다. `scenarios/<id>/scenario.json`을 복사해 새 ID를 만들고 시작·종료 위치와 속도, 목표 클래스를 설정합니다.
 
 ```json
 {
@@ -50,3 +50,7 @@
 ## 앞으로의 권장 평가 항목
 
 클래스별 탐지 precision/recall, 거리 구간별 오차, 방위각 오차, 가림 비율별 유효 깊이 비율, 측정 지연, 안내 반복률을 서로 분리해 기록합니다. 무늬 없는 표면·역광·반사·동적 가림·화면 가장자리 등에서 실패를 숨기지 않도록 데이터셋과 시나리오를 분리합니다.
+
+## 목적지 임무와 교통 추가
+
+새 네 월드는 `scene.json`의 schema_version=2와 `mission.actions`를 사용합니다. 이동은 연속 곡선, 접촉·후진·좌우 확인·우회·도착은 명시적인 상태입니다. `traffic_signal`이 있으면 별도 교통 연출이 동작합니다. [DESTINATION_MISSIONS.md](DESTINATION_MISSIONS.md)를 참고하세요. 새 detector 클래스는 object_classes와 YOLO class_allowlist를 함께 갱신합니다.

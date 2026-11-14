@@ -9,6 +9,7 @@ import numpy as np
 import rclpy
 from PIL import Image as PILImage, ImageDraw, ImageFont
 from cv_project.guidance.formatter import describe_estimate
+from mission_panel import render_panel,PHASES
 from sensor_msgs.msg import Image
 from std_msgs.msg import Bool, String
 
@@ -51,14 +52,14 @@ for side in ['left','right']:
 node.create_subscription(String,'/assistive/status',on_status,10)
 pause_pub=node.create_publisher(Bool,'/assistive/pause',10)
 name='Assistive Vision - Stereo ROS Monitor'
-cv2.namedWindow(name,cv2.WINDOW_NORMAL); cv2.resizeWindow(name,1280,720); cv2.moveWindow(name,140,350)
+cv2.namedWindow(name,cv2.WINDOW_NORMAL); cv2.resizeWindow(name,1600,720); cv2.moveWindow(name,80,160)
 font=cv2.FONT_HERSHEY_SIMPLEX
 try:
     while rclpy.ok():
         frame_start=time.monotonic()
-        rclpy.spin_once(node,timeout_sec=.005)
-        canvas=np.full((720,1280,3),(25,21,18),np.uint8)
-        cv2.putText(canvas,'ASSISTIVE VISION  /  NEIGHBORHOOD WALK',(24,34),font,.8,(235,238,242),2,cv2.LINE_AA)
+        for _ in range(10):rclpy.spin_once(node,timeout_sec=0.)
+        canvas=np.full((720,1600,3),(25,21,18),np.uint8)
+        cv2.putText(canvas,'ASSISTIVE VISION  /  DESTINATION MISSIONS',(24,34),font,.8,(235,238,242),2,cv2.LINE_AA)
         for i,side in enumerate(['left','right']):
             x=i*640
             if side in images:
@@ -76,8 +77,9 @@ try:
             stale=time.monotonic()-arrivals.get(side,0)>2
             label=f'{side.upper()} CAMERA  '+('WAITING FOR TOPIC' if stale else 'LIVE')
             cv2.putText(canvas,label,(x+16,88),font,.51,(90,210,245) if not stale else (90,90,235),1,cv2.LINE_AA)
-        walk='PAUSED' if status.get('paused') else ('OBSERVATION STOP' if status.get('holding') else 'WALKING')
-        text=f"{walk}   |   x {status.get('x_m',0):.1f} m   |   {status.get('speed_mps',0):.2f} m/s   |   lap {status.get('lap',0)+1}   |   P: pause / resume    Q: close monitor"
+        walk='PAUSED' if status.get('paused') else (status['mission']['phase'].upper() if status.get('mission') else ('OBSERVATION STOP' if status.get('holding') else 'WALKING'))
+        location=f"({status.get('x_m',0):.1f}, {status.get('y_m',0):.1f}) m"
+        text=f"{walk}   |   {location}   |   {status.get('speed_mps',0):.2f} m/s   |   lap {status.get('lap',0)+1}   |   P: pause / resume    Q: close monitor"
         cv2.putText(canvas,text,(18,604),font,.51,(230,230,230),1,cv2.LINE_AA)
         objects=perception.get('objects',[])
         reference='  /  '.join(f"{o['class']}: {o['distance_m']:.1f}m" if o['valid'] else f"{o['class']}: unavailable" for o in objects) or 'no target currently visible'
@@ -85,9 +87,13 @@ try:
         cv2.putText(canvas,f"SGBM {perception.get('processing_ms',0):.0f} ms  |  detector: {perception.get('detector_source','waiting')}  |  distance / bearing: IMAGE MEASUREMENTS",(18,658),font,.43,(145,145,145),1,cv2.LINE_AA)
         pil=PILImage.fromarray(cv2.cvtColor(canvas,cv2.COLOR_BGR2RGB)); draw=ImageDraw.Draw(pil)
         current=min(guidance,key=lambda g:g['distance_m'])['text'] if guidance else ('영상으로 거리를 측정할 수 없습니다.' if objects else '전방에 표시할 대상이 없습니다.')
+        traffic=status.get('mission',{}).get('traffic')
+        if traffic:
+            current='빨간불입니다. 기다리세요.' if traffic['pedestrian_signal']=='red' else '초록불 · 차량 정지 확인 후 횡단'
         draw.text((18,673),current,font=korean_font,fill=(240,220,120))
         draw.text((24,50),status.get('scenario_name_ko','상가 앞 보도')+' · '+status.get('challenge_ko',''),font=small_korean_font,fill=(165,192,200),anchor='lt')
         canvas=cv2.cvtColor(np.asarray(pil),cv2.COLOR_RGB2BGR)
+        render_panel(canvas,status,korean_font,small_korean_font)
         cv2.imshow(name,canvas)
         key=cv2.waitKey(1)&255
         if key in [ord('q'),27]: break

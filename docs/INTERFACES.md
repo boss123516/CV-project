@@ -59,3 +59,5 @@ YOLO26 모드는 `/assistive/ground_truth/objects`를 구독하지 않습니다.
 - 방위각: 시계방향 양수, 정면 0°, 왼쪽 −30°는 11시, 오른쪽 +30°는 1시
 
 촬영 시각의 TF를 먼저 사용하고, 없으면 `config/stereo_rig.json`의 설치 보정값을 사용합니다. 변환 출처는 `extrinsic_source`에 기록합니다. 이것은 카메라 설치 보정이며 대상의 정답 위치가 아닙니다.
+
+목적지 임무·신호 이벤트는 [DESTINATION_MISSIONS.md](DESTINATION_MISSIONS.md)의 `/assistive/mission/events`, `/assistive/mission/alerts`, status의 `mission` 구조를 사용합니다. 이 데이터의 출처는 `scenario_script`이며 거리 추정 입력과 분리합니다.

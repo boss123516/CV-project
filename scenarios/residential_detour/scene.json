@@ -1,0 +1,140 @@
+{
+  "schema_version": 2,
+  "name": "residential_detour",
+  "mission": {
+    "start": [
+      0,
+      0
+    ],
+    "heading_rad": 0,
+    "destination": {
+      "name_ko": "주거동 출입구",
+      "position": [
+        17.5,
+        7
+      ]
+    },
+    "actions": [
+      {
+        "id": "approach",
+        "kind": "walk",
+        "waypoints": [
+          [
+            3.8,
+            0
+          ],
+          [
+            5.1,
+            0
+          ]
+        ],
+        "caption_ko": "주거동 출입구로 이동",
+        "speed_mps": 0.68
+      },
+      {
+        "id": "tap",
+        "kind": "contact",
+        "duration_s": 1.1,
+        "caption_ko": "지팡이가 펜스에 닿음 · 접촉 연출"
+      },
+      {
+        "id": "retreat",
+        "kind": "backtrack",
+        "waypoints": [
+          [
+            4.25,
+            0
+          ]
+        ],
+        "caption_ko": "한 걸음 뒤로 물러남",
+        "speed_mps": 0.3
+      },
+      {
+        "id": "look",
+        "kind": "scan",
+        "duration_s": 2.6,
+        "caption_ko": "좌우 공간을 확인"
+      },
+      {
+        "id": "side_alley",
+        "kind": "detour",
+        "waypoints": [
+          [
+            4.25,
+            -2.9
+          ],
+          [
+            9.4,
+            -2.9
+          ],
+          [
+            9.4,
+            0
+          ],
+          [
+            12,
+            0
+          ]
+        ],
+        "caption_ko": "옆 골목으로 돌아 막힌 구간 통과",
+        "speed_mps": 0.6
+      },
+      {
+        "id": "to_entrance",
+        "kind": "walk",
+        "waypoints": [
+          [
+            12,
+            7
+          ],
+          [
+            17.5,
+            7
+          ]
+        ],
+        "caption_ko": "모퉁이를 돌아 주거동 출입구로 이동",
+        "speed_mps": 0.68
+      },
+      {
+        "id": "destination",
+        "kind": "arrive",
+        "duration_s": 6,
+        "caption_ko": "목적지 도착"
+      }
+    ],
+    "obstacles": [
+      {
+        "id": "MISSION_BARRIER",
+        "center": [
+          6,
+          0
+        ],
+        "half_extents": [
+          0.3,
+          1.4
+        ]
+      }
+    ],
+    "repeat_after_s": 6
+  },
+  "actor": {
+    "start": [
+      15,
+      8.5
+    ],
+    "end": [
+      15,
+      5.5
+    ],
+    "trigger_action": "to_entrance",
+    "speed_mps": 0.65
+  },
+  "scenarios": [
+    {
+      "start_m": 0,
+      "id": "residential_detour",
+      "name_ko": "주거 골목 · 펜스 접촉 후 옆 골목 우회",
+      "challenge_ko": "목적지 이동 · 접촉 연출 · 후진 · 우회 · 도착"
+    }
+  ]
+}

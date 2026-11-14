@@ -1,0 +1,21 @@
+{
+  "id": "courtyard_detour",
+  "title_ko": "공동주택 중정 · 화단을 돌아 출입구로",
+  "version": 2,
+  "world": "webots/worlds/courtyard_detour.wbt",
+  "scene": "scenarios/courtyard_detour/scene.json",
+  "route": {
+    "start_m": 0,
+    "end_m": 24.682,
+    "cruise_speed_mps": 0.68
+  },
+  "evaluation": {
+    "target_classes": [
+      "barrier",
+      "pedestrian",
+      "planter"
+    ],
+    "max_visible_targets": 8
+  },
+  "notes": "Distinct world and destination mission. Contacts and detours are explicit scenario choreography, not perception-driven navigation."
+}

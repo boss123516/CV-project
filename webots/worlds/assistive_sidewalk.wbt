@@ -359,9 +359,9 @@ Pose { translation 2.5664999999999996 -0.51 1.6  children [ Shape { appearance P
 Pose { translation 3.3164999999999996 -0.51 0.43  children [ Shape { appearance PBRAppearance { baseColor 0.53 0.38 0.22 roughness 0.8 metalness 0  } geometry Box { size 0.7 0.025 0.28 } } ] }
 Pose { translation 0 -0.48 1.24  children [ Shape { appearance PBRAppearance { baseColor 0.06 0.13 0.15 roughness 0.2 metalness 0  } geometry Box { size 1.1 0.1 2.4 } } ] }
 Pose { translation 0.38 -0.57 1.1  children [ Shape { appearance PBRAppearance { baseColor 0.80 0.79 0.72 roughness 0.8 metalness 0.65  } geometry Box { size 0.045 0.06 0.45 } } ] }
-Pose { translation 0 -0.55 2.77  children [ Shape { appearance PBRAppearance { baseColor 1 1 1 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/cafe.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.1 0.7 } } ] }
-Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.12 0.27 0.24 roughness 0.8 metalness 0  } geometry Box { size 8.25 1.3 0.1 } } ] }
-Pose { translation 0 -1.58 2.26  children [ Shape { appearance PBRAppearance { baseColor 0.12 0.27 0.24 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
+Pose { translation 0 -0.48 2.77  children [ Shape { appearance PBRAppearance { baseColor 0.65 0.65 0.60 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/concrete.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.08 0.35 } } ] }
+Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.7 0.08 } } ] }
+Pose { translation 0 -1.2 2.31  children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
 ]  }
 DEF BUILDING_SHOP_1 Solid { translation 9.0 2.95 0  name "building_shop_1"  children [
 Pose { translation 0 0 3.05  children [ Shape { appearance PBRAppearance { baseColor 0.74 0.78 0.75 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/concrete.png" ] } textureTransform TextureTransform { scale 4 3 } } geometry Box { size 8.85 0.75 6.1 } } ] }
@@ -394,9 +394,9 @@ Pose { translation 2.5664999999999996 -0.51 1.6  children [ Shape { appearance P
 Pose { translation 3.3164999999999996 -0.51 0.43  children [ Shape { appearance PBRAppearance { baseColor 0.53 0.38 0.22 roughness 0.8 metalness 0  } geometry Box { size 0.7 0.025 0.28 } } ] }
 Pose { translation 0 -0.48 1.24  children [ Shape { appearance PBRAppearance { baseColor 0.06 0.13 0.15 roughness 0.2 metalness 0  } geometry Box { size 1.1 0.1 2.4 } } ] }
 Pose { translation 0.38 -0.57 1.1  children [ Shape { appearance PBRAppearance { baseColor 0.80 0.79 0.72 roughness 0.8 metalness 0.65  } geometry Box { size 0.045 0.06 0.45 } } ] }
-Pose { translation 0 -0.55 2.77  children [ Shape { appearance PBRAppearance { baseColor 1 1 1 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/market.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.1 0.7 } } ] }
-Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.48 0.24 0.16 roughness 0.8 metalness 0  } geometry Box { size 8.25 1.3 0.1 } } ] }
-Pose { translation 0 -1.58 2.26  children [ Shape { appearance PBRAppearance { baseColor 0.48 0.24 0.16 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
+Pose { translation 0 -0.48 2.77  children [ Shape { appearance PBRAppearance { baseColor 0.65 0.65 0.60 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/concrete.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.08 0.35 } } ] }
+Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.7 0.08 } } ] }
+Pose { translation 0 -1.2 2.31  children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
 ]  }
 DEF BUILDING_SHOP_2 Solid { translation 18.0 2.95 0  name "building_shop_2"  children [
 Pose { translation 0 0 2.75  children [ Shape { appearance PBRAppearance { baseColor 0.75 0.70 0.63 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/concrete.png" ] } textureTransform TextureTransform { scale 4 3 } } geometry Box { size 8.85 0.75 5.5 } } ] }
@@ -429,9 +429,9 @@ Pose { translation 2.5664999999999996 -0.51 1.6  children [ Shape { appearance P
 Pose { translation 3.3164999999999996 -0.51 0.43  children [ Shape { appearance PBRAppearance { baseColor 0.53 0.38 0.22 roughness 0.8 metalness 0  } geometry Box { size 0.7 0.025 0.28 } } ] }
 Pose { translation 0 -0.48 1.24  children [ Shape { appearance PBRAppearance { baseColor 0.06 0.13 0.15 roughness 0.2 metalness 0  } geometry Box { size 1.1 0.1 2.4 } } ] }
 Pose { translation 0.38 -0.57 1.1  children [ Shape { appearance PBRAppearance { baseColor 0.80 0.79 0.72 roughness 0.8 metalness 0.65  } geometry Box { size 0.045 0.06 0.45 } } ] }
-Pose { translation 0 -0.55 2.77  children [ Shape { appearance PBRAppearance { baseColor 1 1 1 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/studio.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.1 0.7 } } ] }
-Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.16 0.23 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 1.3 0.1 } } ] }
-Pose { translation 0 -1.58 2.26  children [ Shape { appearance PBRAppearance { baseColor 0.16 0.23 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
+Pose { translation 0 -0.48 2.77  children [ Shape { appearance PBRAppearance { baseColor 0.65 0.65 0.60 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/concrete.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.08 0.35 } } ] }
+Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.7 0.08 } } ] }
+Pose { translation 0 -1.2 2.31  children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
 ]  }
 DEF BUILDING_SHOP_3 Solid { translation 27.0 2.95 0  name "building_shop_3"  children [
 Pose { translation 0 0 3.05  children [ Shape { appearance PBRAppearance { baseColor 0.89 0.86 0.79 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/brick.png" ] } textureTransform TextureTransform { scale 4 3 } } geometry Box { size 8.85 0.75 6.1 } } ] }
@@ -464,9 +464,9 @@ Pose { translation 2.5664999999999996 -0.51 1.6  children [ Shape { appearance P
 Pose { translation 3.3164999999999996 -0.51 0.43  children [ Shape { appearance PBRAppearance { baseColor 0.53 0.38 0.22 roughness 0.8 metalness 0  } geometry Box { size 0.7 0.025 0.28 } } ] }
 Pose { translation 0 -0.48 1.24  children [ Shape { appearance PBRAppearance { baseColor 0.06 0.13 0.15 roughness 0.2 metalness 0  } geometry Box { size 1.1 0.1 2.4 } } ] }
 Pose { translation 0.38 -0.57 1.1  children [ Shape { appearance PBRAppearance { baseColor 0.80 0.79 0.72 roughness 0.8 metalness 0.65  } geometry Box { size 0.045 0.06 0.45 } } ] }
-Pose { translation 0 -0.55 2.77  children [ Shape { appearance PBRAppearance { baseColor 1 1 1 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/cafe.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.1 0.7 } } ] }
-Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.12 0.27 0.24 roughness 0.8 metalness 0  } geometry Box { size 8.25 1.3 0.1 } } ] }
-Pose { translation 0 -1.58 2.26  children [ Shape { appearance PBRAppearance { baseColor 0.12 0.27 0.24 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
+Pose { translation 0 -0.48 2.77  children [ Shape { appearance PBRAppearance { baseColor 0.65 0.65 0.60 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/concrete.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.08 0.35 } } ] }
+Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.7 0.08 } } ] }
+Pose { translation 0 -1.2 2.31  children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
 ]  }
 DEF BUILDING_SHOP_4 Solid { translation 36.0 2.95 0  name "building_shop_4"  children [
 Pose { translation 0 0 2.75  children [ Shape { appearance PBRAppearance { baseColor 0.74 0.78 0.75 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/concrete.png" ] } textureTransform TextureTransform { scale 4 3 } } geometry Box { size 8.85 0.75 5.5 } } ] }
@@ -499,9 +499,9 @@ Pose { translation 2.5664999999999996 -0.51 1.6  children [ Shape { appearance P
 Pose { translation 3.3164999999999996 -0.51 0.43  children [ Shape { appearance PBRAppearance { baseColor 0.53 0.38 0.22 roughness 0.8 metalness 0  } geometry Box { size 0.7 0.025 0.28 } } ] }
 Pose { translation 0 -0.48 1.24  children [ Shape { appearance PBRAppearance { baseColor 0.06 0.13 0.15 roughness 0.2 metalness 0  } geometry Box { size 1.1 0.1 2.4 } } ] }
 Pose { translation 0.38 -0.57 1.1  children [ Shape { appearance PBRAppearance { baseColor 0.80 0.79 0.72 roughness 0.8 metalness 0.65  } geometry Box { size 0.045 0.06 0.45 } } ] }
-Pose { translation 0 -0.55 2.77  children [ Shape { appearance PBRAppearance { baseColor 1 1 1 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/market.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.1 0.7 } } ] }
-Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.48 0.24 0.16 roughness 0.8 metalness 0  } geometry Box { size 8.25 1.3 0.1 } } ] }
-Pose { translation 0 -1.58 2.26  children [ Shape { appearance PBRAppearance { baseColor 0.48 0.24 0.16 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
+Pose { translation 0 -0.48 2.77  children [ Shape { appearance PBRAppearance { baseColor 0.65 0.65 0.60 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/concrete.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.08 0.35 } } ] }
+Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.7 0.08 } } ] }
+Pose { translation 0 -1.2 2.31  children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
 ]  }
 DEF BUILDING_SHOP_5 Solid { translation 45.0 2.95 0  name "building_shop_5"  children [
 Pose { translation 0 0 3.05  children [ Shape { appearance PBRAppearance { baseColor 0.75 0.70 0.63 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/concrete.png" ] } textureTransform TextureTransform { scale 4 3 } } geometry Box { size 8.85 0.75 6.1 } } ] }
@@ -534,9 +534,9 @@ Pose { translation 2.5664999999999996 -0.51 1.6  children [ Shape { appearance P
 Pose { translation 3.3164999999999996 -0.51 0.43  children [ Shape { appearance PBRAppearance { baseColor 0.53 0.38 0.22 roughness 0.8 metalness 0  } geometry Box { size 0.7 0.025 0.28 } } ] }
 Pose { translation 0 -0.48 1.24  children [ Shape { appearance PBRAppearance { baseColor 0.06 0.13 0.15 roughness 0.2 metalness 0  } geometry Box { size 1.1 0.1 2.4 } } ] }
 Pose { translation 0.38 -0.57 1.1  children [ Shape { appearance PBRAppearance { baseColor 0.80 0.79 0.72 roughness 0.8 metalness 0.65  } geometry Box { size 0.045 0.06 0.45 } } ] }
-Pose { translation 0 -0.55 2.77  children [ Shape { appearance PBRAppearance { baseColor 1 1 1 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/studio.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.1 0.7 } } ] }
-Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.16 0.23 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 1.3 0.1 } } ] }
-Pose { translation 0 -1.58 2.26  children [ Shape { appearance PBRAppearance { baseColor 0.16 0.23 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
+Pose { translation 0 -0.48 2.77  children [ Shape { appearance PBRAppearance { baseColor 0.65 0.65 0.60 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/concrete.png" ] } textureTransform TextureTransform { scale 1 1 } } geometry Box { size 8.15 0.08 0.35 } } ] }
+Pose { translation 0 -0.92 2.42 rotation 1 0 0 -0.1 children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.7 0.08 } } ] }
+Pose { translation 0 -1.2 2.31  children [ Shape { appearance PBRAppearance { baseColor 0.34 0.36 0.34 roughness 0.8 metalness 0  } geometry Box { size 8.25 0.055 0.23 } } ] }
 ]  }
 DEF BUILDING_FAR_0 Solid { translation 1.0 -9.45 0  name "building_far_0"  children [
 Pose { translation 0 0 3.0  children [ Shape { appearance PBRAppearance { baseColor 0.89 0.86 0.79 roughness 0.8 metalness 0 baseColorMap ImageTexture { url [ "../textures/brick.png" ] } textureTransform TextureTransform { scale 4 3 } } geometry Box { size 10.8 0.75 6.0 } } ] }

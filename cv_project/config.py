@@ -38,7 +38,10 @@ def scenario_config(identifier=None):
     scene['route_start_m'] = manifest['route']['start_m']
     scene['route_end_m'] = manifest['route']['end_m']
     scene['cruise_speed_mps'] = manifest['route']['cruise_speed_mps']
-    if not 0 <= scene['route_start_m'] < scene['route_end_m'] <= scene['path_xy'][-1][0]:
+    if 'mission' in scene:
+        from cv_project.simulation.mission import MissionDriver
+        MissionDriver(scene['mission'],scene['cruise_speed_mps'])
+    elif not 0 <= scene['route_start_m'] < scene['route_end_m'] <= scene['path_xy'][-1][0]:
         raise ValueError('Scenario route lies outside the shared world')
     scene['manifest'] = manifest
     return scene
