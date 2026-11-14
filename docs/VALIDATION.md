@@ -43,3 +43,11 @@ Ultralytics 8.4.46과 사전학습 `yolo26n.pt`를 사용해 `yolo26 + crossing_
 Webots 실제 실행으로 residential_detour, courtyard_detour, station_access_detour의 접촉·후진·탐색·우회·도착을 확인했습니다. signalized_crossing에서는 빨간불 대기와 초록불 전환, 최대 5.8m/s 차량 통행, 횡단 구간이 비어 있는 상태의 횡단 및 도착을 확인했습니다. 신호·접촉·우회는 scenario_script 출처이며 영상 판정 성능 지표로 계산하지 않습니다.
 
 기존 검사 기록의 테스트 18개는 이전 모듈화 시점의 결과입니다. 추가 실행 원본은 webots/logs/validation_<scenario>.json에 로컬 보관합니다.
+
+## 전체 10개 시나리오 순차 실행
+
+2026-11-14 기본 `yolo26n.pt`와 realtime 모드로 viewer·voice를 켜고 10개 시나리오를 순차 실행했습니다. 기존 구간 6개는 한 바퀴 완료, 목적지 임무 4개는 도착까지 확인했습니다. 우회 임무는 접촉 연출·후진·탐색·우회·도착 단계를, 교통 임무는 빨강/초록 상태와 차량 통행·대기/횡단 안내를 확인했습니다. 시나리오 전환 시 남던 Webots 프로세스의 종료 처리도 보완했습니다.
+
+모니터 집계는 스테레오 출력 packet 5,599개와 유효 깊이 추정 1,323건입니다. 이는 반복 관측을 포함한 연결 검사 수치이며 독립 객체 수나 정확도 지표가 아닙니다. 로그에 출력된 클래스는 `bench`, `pedestrian`, `traffic_light`였고, 정답과의 프레임별 매칭은 수행하지 않았습니다. 시나리오 전환 경계 메시지도 포함될 수 있습니다.
+
+집계는 로컬 `webots/logs/all_scenarios_latest.json`과 해당 `report_dir`에 보관합니다. **10개 실행 완료는 전체 객체 탐지 성공을 뜻하지 않습니다.** 미지원 클래스와 보강할 기존 클래스는 [학습 대상 객체](TRAINING_OBJECTS.md)에 정리했습니다.

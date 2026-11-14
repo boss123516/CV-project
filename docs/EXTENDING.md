@@ -2,6 +2,8 @@
 
 ## YOLO26 커스텀 모델
 
+클래스별 학습 필요성, 수집할 시나리오, bbox 범위와 자동 라벨 누락 사항은 [학습 대상 객체](TRAINING_OBJECTS.md)를 먼저 확인합니다. 최종 목표는 신규 6종과 기존 클래스 보강 4종을 포함한 10종 탐지 모델입니다. 신호 색상 판정은 별도 작업입니다.
+
 1. `config/object_classes.json`의 프로젝트 클래스에 맞는 학습 데이터를 준비합니다.
 2. YOLO26을 별도로 fine-tuning합니다. 현재 저장소가 자동으로 학습을 시작하지는 않습니다.
 3. `models/` 아래 체크포인트를 놓고 `config/pipelines/yolo26.json`의 `detector.weights`를 지정합니다.
