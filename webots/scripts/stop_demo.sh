@@ -14,6 +14,11 @@ for component in voice viewer perception detector sim; do
           kill -0 -- "-$demo_pid" 2>/dev/null || break
           sleep 0.05
         done
+        # Webots may leave its GUI process alive after the launcher exits.
+        # This group belongs to the verified project process above.
+        if kill -0 -- "-$demo_pid" 2>/dev/null; then
+          kill -KILL -- "-$demo_pid" 2>/dev/null || true
+        fi
       else
         kill -TERM "$demo_pid"
       fi
